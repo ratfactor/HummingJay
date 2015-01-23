@@ -10,7 +10,7 @@
 	}],
 	"autoload": {
 		"psr-4": {
-			"Ratfactor\\HummingJay\\": "src/"
+			"HummingJay\\": "src/"
 		}
 	},
 	"require-dev": {

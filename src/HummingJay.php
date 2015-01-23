@@ -1,5 +1,5 @@
 <?php 
-namespace Ratfactor\HummingJay;
+namespace HummingJay;
 
 class HummingJay {
 	public function helloworld(){
