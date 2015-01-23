@@ -1,0 +1,14 @@
+{
+	"name": "ratfactor/hummingjay",
+	"version": "0.1.0",
+	"type": "library",
+	"license": "MIT",
+	"authors": [{
+		"name": "Dave Gauer",
+		"homepage": "http://ratfactor.com",
+		"role": "Developer"
+	}],
+	"require-dev": {
+		"phpunit/phpunit": "3.7.*"
+	}
+}
