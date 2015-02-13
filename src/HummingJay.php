@@ -2,9 +2,6 @@
 namespace HummingJay;
 
 
-require_once "../vendor/autoload.php";
-
-
 class HummingJay{
 	public function __construct($route_str){
 		$routes = $this->parseRouteString($route_str);
