@@ -147,4 +147,5 @@ I intend to stick to the rules of [semantic versioning](http://semver.org/).
 
 Version | Date       | Description
 --------|------------|------------
+0.1.1   | 2015-02-13 | Removed bug from early prototyping leftover
 0.1.0   | 2015-02-10 | Intial release. Replaces previous project, "hm-json ResourcePhp"
