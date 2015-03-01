@@ -36,7 +36,8 @@ class HummingJay{
 					"uri" => $uri,
 					"params" => $this->makeParameterHash($uri_param_matches),
 					"method" => $method,
-					"resource_uris" => $routes
+					"resource_uris" => $routes,
+					"getRawInput"=> function(){ return file_get_contents("php://input"); }
 				];
 				$resource = new $res_class($req);
 				$resource->callMethod($req);

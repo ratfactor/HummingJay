@@ -3,6 +3,9 @@
 /*
 	Realistically, your modern project is likely to use namespacing, so this
 	demo does as well (Demo). HummingJay does not require it.
+
+	Unrealistically, this demo contains everything in one file. It's much more
+	likely that you'll have your Resource classes in their own files.
 */ 
 
 namespace Demo;
@@ -253,6 +256,10 @@ class AuthorsCollection extends Resource{
 	when classes are instantiated using a string name for reasons which, quite 
 	frankly, confuse the heck out of me, but apparently made sense to the PHP 
 	developers.
+
+	In a normal project, this is probably one of the only things which would
+	actually exist in this file - the Resource classes would typically be in
+	their own files.
 */
 
 $api = new HummingJay(<<<'API'
