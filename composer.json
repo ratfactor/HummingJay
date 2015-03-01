@@ -1,6 +1,7 @@
 {
 	"name": "ratfactor/hummingjay",
 	"type": "library",
+	"description": "A library/framework for creating hm-json REST APIs. Handles hypermedia, routing, and HTTP methods.",
 	"license": "MIT",
 	"authors": [{
 		"name": "Dave Gauer",
