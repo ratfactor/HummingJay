@@ -2,7 +2,7 @@
 
 ## Overview
 
-HummingJay is a PHP 5.3+ library for creating REST APIs using the **hm-json** (todo: hm-json needs a stand-alone spec page) format to deliver hypermedia and JSON data to clients. It has methods for routing, hypermedia generation, and handling HTTP methods and HTTP status codes.
+HummingJay is a PHP 5.5+ library for creating REST APIs using the **hm-json** (todo: hm-json needs a stand-alone spec page!) format to deliver hypermedia and JSON data to clients. It has methods for routing, hypermedia generation, and handling HTTP methods and HTTP status codes.
 
 ## Tiny Example
 
@@ -113,7 +113,7 @@ At any time, you can call the following static methods to immediately send an HT
 ## Formatting response data
 
 
-TODO!
+TODO!!
 
 
 ## License
