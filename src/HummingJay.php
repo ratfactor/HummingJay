@@ -67,26 +67,28 @@ class HummingJay{
 	}
 
 	private function getPayload(){
-		// attempts to decode any JSON which might be in the request body
 		$pl = [
 			"raw"=>file_get_contents("php://input"),
 			"exists"=>false,
 			"json_valid"=>false,
-			"json_error"=>'',
+			"json_error"=>JSON_ERROR_NONE,
+			"json_msg"=>'',
 			"json"=>null
 		];
-		if(strlen($pl["raw"]) > 0){
-			$pl["exists"] = true;
-			$pl["json"] = json_decode($pl["raw"]);
-		    switch (json_last_error()) {
-		    	case JSON_ERROR_NONE: $pl['json_valid'] = true; break;
-		        case JSON_ERROR_DEPTH: $pl['json_error'] = 'Maximum stack depth exceeded'; break;
-		        case JSON_ERROR_STATE_MISMATCH: $pl['json_error'] = 'Underflow or the modes mismatch'; break;
-		        case JSON_ERROR_CTRL_CHAR: $pl['json_error'] = 'Unexpected control character found'; break;
-		        case JSON_ERROR_SYNTAX: $pl['json_error'] = 'Syntax error, malformed JSON'; break;
-		        case JSON_ERROR_UTF8: $pl['json_error'] = 'Malformed UTF-8 characters, possibly incorrectly encoded'; break;
-		        default: $pl['json_error'] = 'Unknown error'; break;
-		    }
+		if(strlen($pl["raw"]) == 0){ return $pl; }
+
+		// we've got *something*, try to decode as JSON
+		$pl["exists"] = true;
+		$pl["json"] = json_decode($pl["raw"]);
+		$pl["json_error"] = json_last_error();
+		switch ($pl["json_error"]) {
+			case JSON_ERROR_NONE: $pl['json_valid'] = true; break;
+			case JSON_ERROR_DEPTH: $pl['json_msg'] = 'Maximum stack depth exceeded'; break;
+			case JSON_ERROR_STATE_MISMATCH: $pl['json_msg'] = 'Underflow or the modes mismatch'; break;
+			case JSON_ERROR_CTRL_CHAR: $pl['json_msg'] = 'Unexpected control character found'; break;
+			case JSON_ERROR_SYNTAX: $pl['json_msg'] = 'Syntax error, malformed JSON'; break;
+			case JSON_ERROR_UTF8: $pl['json_msg'] = 'Malformed UTF-8 characters, possibly incorrectly encoded'; break;
+			default: $pl['json_msg'] = 'Unknown error'; break;
 		}
 		return $pl;
 	}
