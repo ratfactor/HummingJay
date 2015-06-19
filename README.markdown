@@ -14,9 +14,9 @@ HummingJay is a PHP 5.3+ library for creating REST APIs using the **hm-json** (t
 	$api = new HummingJay\HummingJay("/foo - Foo");
 	?>
 
-This example is unrealistically tiny.  But it does show the two basic elements of creating an API with HummingJay: creating Resource classes ("Foo") and defining URI paths ("/foo") to resolve to those classes - also known as "routing".
+This example is unrealistically tiny.  But it is perfectly valid and shows the two basic elements of creating an API with HummingJay: creating Resources ("Foo") and defining URI paths ("/foo") to resolve to those classes - also known as "routing".
 
-Look in the source at the heavily commented `demo/index.php` file for a much more thorough example.
+Look in the source at the heavily commented `demo/index.php` file for a much more thorough example of creating resources.
 
 ## Routing
 
@@ -62,15 +62,22 @@ _Note: HummingJay provides a default OPTIONS method and you may want to call it 
 
 ### The $req (request) parameter for method handlers
 
-The first parameter, conventionally named `$req`, contains information about the HTTP request:
+The first parameter, conventionally named `$req`, contains information about the HTTP request.  HummingJay attempts to decode the request body as JSON data and this is also included.
 
 Property      | Description
 --------------|---------------------------------
-__uri__           | the API URI matched by your resource
-__params__        | an associative array of parameters from the URI
-__method__        | the HTTP method used, e.g. POST
-__resource_uris__ | a list of the other URIs in your API - generally used by the supplied default OPTIONS handler
-
+__uri__               | the API URI matched by your resource
+__params__            | an associative array of parameters from the URI
+__method__            | the HTTP method used, e.g. POST
+__resource_uris__     | a list of the other URIs in your API - generally used by the supplied default OPTIONS handler
+__payload__           | array containing the request body
+__..["raw"]__         | payload["raw"] contains the unprocessed content of the request body
+__..["exists"]__      | payload["exists"] is true if the request body was not empty
+__..["json_valid"]__  | payload["json_valid"] is true if the body was valid JSON data
+__..["json_error"]__  | payload["json_error"] contains a numeric error code if there were JSON decode errors
+__..["json_msg"]__    | payload["json_msg"] contains an English message if there were JSON decode errors
+__..["json"]__        | payload["json"] is the actual de-serialized (decoded) JSON data structure
+ 
 Here's an example of getting the parameters of a URI:
 
 	// route: /foo/bar/{bar_id}
@@ -79,6 +86,7 @@ Here's an example of getting the parameters of a URI:
 	$mybar = $req->params['bar_id']; 
 	// $mybar = 74
 
+
 ### The $res (response) parameter for method handlers
 
 The '$res' parameter is a Response object which you may manipulate and then return as the output of your method.
@@ -86,6 +94,7 @@ The '$res' parameter is a Response object which you may manipulate and then retu
 In the above example, the GET method uses the addData() method to add JSON-encoded data to the response.  Response defines a simple API as seen in this example:
 
 	class Foo extends HummingJay\Resource{
+
 		public function get($req, $res){
 			$res->hyperTitle("Your data"); // sets the hm-json title
 			$res->hyperDescription("This data is great!");
@@ -98,23 +107,106 @@ In the above example, the GET method uses the addData() method to add JSON-encod
 		}
 	}
 
-As soon as you add any of the hypermedia properties such as title, description, or hyperlink, the Response object knows to return hm-json hypermedia.  It is not returned by default expect by the default OPTIONS method handler.
+As soon as you add any of the hypermedia properties such as title, description, or hyperlink, the Response object knows to return hm-json hypermedia.  
+
+The default OPTIONS method provided by HummingJay already returns linked hm-json hypermedia for your API.  Other methods do not return hypermedia unless you call one of the `hyper*` methods as shown above.
 
 You can see that hyperlinks are simply PHP arrays with three specific named values.  You can add as many hyperlinks as you'd like to your response's hypermedia.
 
 ## Returning Errors
-At any time, you can call the following static methods to immediately send an HTTP error response with an explanatory string.
+At any time, you can call the following static convenience methods to immediately send an HTTP error response with an explanatory string.
 
 	$res->send400("Your request is so bad!");
 	$res->send404("Couldn't find that thing!");
 	$res->send405("Don't POST to this resource!");
 	$res->send500("Argh! It hurts so bad!");
 
+You an also send JSON strings back for client applications to decode:
+
+	$res->send400('{"error":"EMPTY","error_msg","Your request body was empty. Please send something."}');
+
+or even
+
+	$res->send400('{"error":"DECODE","error_msg","'.$req->payload['json_msg'].'"}');
+
+
+To send other statuses, you can do what the convenience methods do:
+
+	header('HTTP/1.0 403 Forbidden'); 
+	die("You are not allowed to GET this resource without an authentication token.");
+
 ## Formatting response data
 
+The data you add to the response body with `addData()` will be automatically serialized (encoded) as a JSON string before it is sent to the client.
 
-TODO!
+Generally speaking, you'll be arranging your data into structures using native PHP arrays.
 
+	$res->addData(["message"=>"Hello world!"]);
+	return $res;
+
+Results in response body:
+
+	{ "message": "Hello world!" }
+
+_Note: The top-level array will be treated as an associative array, even if it is sequential._
+
+Successive calls to `addData()` merges the data using PHP's built-in `array_merge()` function.
+
+	$res->addData(["dog"=>"Sparky"]);
+	$res->addData(["cat"=>"Fuzzy"]);
+	return $res;
+
+Results in response body:
+
+	response body is: { "dog": "Sparky", "cat": "Fuzzy" }
+
+The data will be serialized using PHP's built-in `json_encode()` function.  I find that it does exactly what you'd expect: sequential arrays are serialized as JSON arrays, associative and non-sequential arrays are serialized as JSON objects with named properties.
+
+	$shopping = [
+		"title"=>"Shopping List",
+		"items"=>[
+			["id"=>11,"name"=>"Lantern (LED)"],
+			["id"=>17,"name"=>"Mud boots"],
+			["id"=>41,"name"=>"Shovel"]
+		]
+	];
+	$res->addData($shopping);
+	return $res;
+
+Results in response body:
+
+	{
+	    "title": "Shopping List",
+	    "items": [
+	        { "id": 11, "name": "Lantern (LED)" },
+	        { "id": 17, "name": "Mud boots" },
+	        { "id": 41, "name": "Shovel" }
+	    ]
+	}	
+
+It is perfectly valid to intermix hm-json hypermedia with your data. 
+
+	$items = ["Shave yak","Buy corn","Update budget"];
+	$res->addData(["items"=>$items]);
+	$res->hyperTitle("Todo List");
+	$res->hyperDescription("The things I need to do today.");
+	return $res;
+
+Results in response body:
+
+	{
+	    "items": [
+	        "Shave yak",
+	        "Buy corn",
+	        "Update budget"
+	    ],
+	    "hypermedia": {
+	        "title": "Todo List",
+	        "description": "The things I need to do today."
+	    }
+	}
+
+_Note: You will get undefined behavior if  you create your own top-level element named "hypermedia", so if you think that's a possibility, don't include hm-json hypermedia elements in your response._
 
 ## License
 
@@ -147,6 +239,7 @@ I intend to stick to the rules of [semantic versioning](http://semver.org/).
 
 Version | Date       | Description
 --------|------------|------------
+1.1.0   | 2015-06-19 | Added JSON-decoded payload to the request object, updated README
 1.0.0   | 2015-03-01 | HummingJay is in use in real projects
 0.1.1   | 2015-02-13 | Removed bug from early prototyping leftover
 0.1.0   | 2015-02-10 | Intial release. Replaces previous project, "hm-json ResourcePhp"

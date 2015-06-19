@@ -37,7 +37,7 @@ class HummingJay{
 					"params" => $this->makeParameterHash($uri_param_matches),
 					"method" => $method,
 					"resource_uris" => $routes,
-					"getRawInput"=> function(){ return file_get_contents("php://input"); }
+					"payload"=> $this->getPayload()
 				];
 				$resource = new $res_class($req);
 				$resource->callMethod($req);
@@ -64,6 +64,31 @@ class HummingJay{
 		$scriptname = $_SERVER['SCRIPT_NAME'];
 		$scriptdir = dirname($scriptname);
 		return preg_replace("'^($scriptname|$scriptdir)'", "", $uri);
+	}
+
+	private function getPayload(){
+		// attempts to decode any JSON which might be in the request body
+		$pl = [
+			"raw"=>file_get_contents("php://input"),
+			"exists"=>false,
+			"json_valid"=>false,
+			"json_error"=>'',
+			"json"=>null
+		];
+		if(strlen($pl["raw"]) > 0){
+			$pl["exists"] = true;
+			$pl["json"] = json_decode($pl["raw"]);
+		    switch (json_last_error()) {
+		    	case JSON_ERROR_NONE: $pl['json_valid'] = true; break;
+		        case JSON_ERROR_DEPTH: $pl['json_error'] = 'Maximum stack depth exceeded'; break;
+		        case JSON_ERROR_STATE_MISMATCH: $pl['json_error'] = 'Underflow or the modes mismatch'; break;
+		        case JSON_ERROR_CTRL_CHAR: $pl['json_error'] = 'Unexpected control character found'; break;
+		        case JSON_ERROR_SYNTAX: $pl['json_error'] = 'Syntax error, malformed JSON'; break;
+		        case JSON_ERROR_UTF8: $pl['json_error'] = 'Malformed UTF-8 characters, possibly incorrectly encoded'; break;
+		        default: $pl['json_error'] = 'Unknown error'; break;
+		    }
+		}
+		return $pl;
 	}
 }
 
