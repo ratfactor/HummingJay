@@ -4,6 +4,10 @@
 
 HummingJay is a PHP 5.5+ library for creating REST APIs using the **hm-json** (todo: hm-json needs a stand-alone spec page!) format to deliver hypermedia and JSON data to clients. It has methods for routing, hypermedia generation, and handling HTTP methods and HTTP status codes.
 
+## Installation
+
+	composer require ratfactor/HummingJay
+
 ## Tiny Example
 
 	<?php
@@ -239,6 +243,7 @@ I intend to stick to the rules of [semantic versioning](http://semver.org/).
 
 Version | Date       | Description
 --------|------------|------------
+1.1.1   | 2015-06-19 | Removed dev-only dependency for PHPUnit (don't install via Composer)
 1.1.0   | 2015-06-19 | Added JSON-decoded payload to the request object, updated README
 1.0.0   | 2015-03-01 | HummingJay is in use in real projects
 0.1.1   | 2015-02-13 | Removed bug from early prototyping leftover
