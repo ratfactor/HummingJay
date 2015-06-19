@@ -53,8 +53,8 @@
 			#browser-fail-message { color: #9F6000; background-color: #FEEFB3; }
 			.message { border: 1px solid; display: inline-block; padding: 3px; margin: 3px; }
 			.address-label { color: #FFF; }
+			.bottom { padding: .5em; }
 			.clear-left { clear: left; }
-			.small { font-size: smaller; }
 			.float-right { float: right; width: 500px; margin-top: 3px; margin-right: 15px; }
 			#browser-hypermedia { color: #336699; background-color: #C2D1E0; border: 3px solid; float: right; width: 500px; z-index: 20; position: absolute; -webkit-box-shadow: 4px 4px 4px 2px #666; box-shadow: 4px 4px 4px 2px #666; padding-bottom: 7px; }
 			#browser-hypermedia .heading { background-color: #336699; color: #FFF; font-size: 1.5em; text-align: center; }
@@ -82,9 +82,9 @@
 
 		<div id="browser-window">
 			<div id="browser-address-bar">
-				<button type="button" id="browser-back">&lt; Back</button>
 				<label class="address-label">Address: <input type="text" id="browser-address-field"></label>
 				<button type="button" id="browser-address-go">Go</button>
+				<button type="button" id="browser-refresh">Refresh</button>
 			</div>
 			<span id="browser-status-bar" class="message"></span>
 			<span id="browser-success-message" class="message"></span>
@@ -101,7 +101,7 @@
 			</div>
 			<pre id="browser-response-headers"></pre><br class="clear-left">
 			<pre id="browser-body"></pre>
-			<div class="clear-left small"><a href="https://bitbucket.org/ratfactor/hm-json-browser">About hm-json Browser</a></div>
+			<div class="bottom clear-left">hm-json Browser v1.2 <a href="https://bitbucket.org/ratfactor/hm-json-browser">About</a></div>
 		</div>
 
 		<!-- end browser HTML source -->
@@ -135,7 +135,7 @@
 			var responseHeaders = $("#browser-response-headers");
 			var addressField = $("#browser-address-field");
 			var goButton = $("#browser-address-go").click(onGoAddress);
-			var backButton = $("#browser-back").attr("disabled", "disabled").click(onBack);
+			var refreshButton = $("#browser-refresh").click(onRefresh);
 			var statusBar = $("#browser-status-bar");
 			var successMessage = $("#browser-success-message");
 			var hypermediaMessage = $("#browser-hypermedia-message");
@@ -147,35 +147,27 @@
 			var hypermediaLinkBox = $("#browser-hypermedia .link-box");
 			var jqXhr = null;
 			var jqXhrData = null;
-			var backHistory = [];
 			var currentReq = null;
 			var self = this; // for event methods and such
+			var lastReq = null;
 
-
-			function onBack(){
-				sendRequest(backHistory.pop());
-				if(backHistory.length == 0){ backButton.attr("disabled", "disabled"); }
-			}
-
-			function pushHistory(){
-				if(currentReq && $.inArray(currentReq.type, ["PUT","POST","DELETE"]) == -1){
-					backHistory.push(currentReq); 
-					backButton.removeAttr("disabled");
-				}				
-			}
 
 			function onGoAddress(){ // from address bar
 				gotoUrl(addressField.val());
 			}
 
+			function onRefresh(){ // from address bar
+				sendRequest(lastReq);
+			}
+
 			function gotoUrl(url){
 				var req = { type: "OPTIONS", url: url, dataType: "json" };
-				pushHistory();
 				sendRequest(req);
 			}
 
 			function sendRequest(req){
 				currentReq = req;
+				lastReq = req;
 				statusBar.text("Making "+req.type+" request to "+req.url+"...");
 				//window.location.hash = req.url; // commented out to not update the real address bar
 				clearMessages();
@@ -325,7 +317,6 @@
 					req.data = data;
 					req.processData = false;  // don't do any conversion, send as is
 				}
-				pushHistory()
 				sendRequest(req);
 			}
 
