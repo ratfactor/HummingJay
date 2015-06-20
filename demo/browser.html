@@ -43,16 +43,18 @@
 			body { font-family: sans-serif; margin: 2em; background-color: #F0F0F5;}
 			pre { overflow: auto; }
 			#browser-address-field { width: 60%; border: 1px solid #666; margin: 0;}
-			#browser-address-bar { background-color: #999; padding-bottom: 4px;}
+			#browser-address-bar { background-color: #999; padding-bottom: 4px; color: #FFF; }
+			#browser-add-header { cursor: pointer; text-decoration: underline; }
+			#browser-add-header-fields .name {	width: 100px; margin-right: 1em;}
+			#browser-add-header-fields .value {	width: 300px; }
 			#browser-body { background-color: #FFF; border-top: 1px solid #666; margin: 0;}
-			#browser-response-headers { color: #666; }
+			#browser-response-headers { color: #666; } 
 			#browser-window { background-color: #DDD; border: 4px solid #999; }
 			#browser-status-bar { background-color: #EEE; color: #333;}
 			#browser-hypermedia-message { color: #336699; background-color: #C2D1E0; }
 			#browser-success-message { color: #4F8A10; background-color: #DFF2BF; }
 			#browser-fail-message { color: #9F6000; background-color: #FEEFB3; }
 			.message { border: 1px solid; display: inline-block; padding: 3px; margin: 3px; }
-			.address-label { color: #FFF; }
 			.bottom { padding: .5em; }
 			.clear-left { clear: left; }
 			.float-right { float: right; width: 500px; margin-top: 3px; margin-right: 15px; }
@@ -85,6 +87,8 @@
 				<label class="address-label">Address: <input type="text" id="browser-address-field"></label>
 				<button type="button" id="browser-address-go">Go</button>
 				<button type="button" id="browser-refresh">Refresh</button>
+				<span id="browser-add-header">+Header</span>
+				<div id="browser-add-header-fields"></div>
 			</div>
 			<span id="browser-status-bar" class="message"></span>
 			<span id="browser-success-message" class="message"></span>
@@ -101,7 +105,7 @@
 			</div>
 			<pre id="browser-response-headers"></pre><br class="clear-left">
 			<pre id="browser-body"></pre>
-			<div class="bottom clear-left">hm-json Browser v1.2 <a href="https://bitbucket.org/ratfactor/hm-json-browser">About</a></div>
+			<div class="bottom clear-left">hm-json Browser v1.3 <a href="https://bitbucket.org/ratfactor/hm-json-browser">About</a></div>
 		</div>
 
 		<!-- end browser HTML source -->
@@ -136,6 +140,8 @@
 			var addressField = $("#browser-address-field");
 			var goButton = $("#browser-address-go").click(onGoAddress);
 			var refreshButton = $("#browser-refresh").click(onRefresh);
+			var addHeaderButton = $("#browser-add-header").click(onAddHeader);
+			var addHeaderFields = $("#browser-add-header-fields");
 			var statusBar = $("#browser-status-bar");
 			var successMessage = $("#browser-success-message");
 			var hypermediaMessage = $("#browser-hypermedia-message");
@@ -160,6 +166,10 @@
 				sendRequest(lastReq);
 			}
 
+			function onAddHeader(){
+				addHeaderFields.append('<div class="field">Header: <input class="name" type="text" value="Authorization"><input type="text" class="value" value="Bearer ">');
+			}
+
 			function gotoUrl(url){
 				var req = { type: "OPTIONS", url: url, dataType: "json" };
 				sendRequest(req);
@@ -173,6 +183,10 @@
 				clearMessages();
 				hypermediaDisplay.hide();
 				addressField.val(req.url);
+				addHeaderFields.find(".field").each(function(){
+					if(!req.headers) req.headers = {};
+					req.headers[$(this).find(".name").val()] = $(this).find(".value").val();
+				});
 				jqXhr = $.ajax(req);
 				jqXhr.always(onDone);
 			}
