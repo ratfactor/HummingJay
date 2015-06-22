@@ -9,17 +9,17 @@ class HummingJay{
 	}
 
 	public function parseRouteString($route_str){
-		$resources = array();
+		$routes = array();
 		// strtok: see http://stackoverflow.com/a/14789147/695615
 		$line = strtok($route_str, "\r\n");
 		while ($line !== false) {
 			if(!preg_match("/(\S+)\s-\s(\S+)/", $line, $matches)){
 				throw new \UnexpectedValueException("Bad line in the routing string: '$line'");
 			}
-			$resources[$matches[1]] = $matches[2]; // uri = classname
+			$routes[$matches[1]] = $matches[2]; // uri = classname
 			$line = strtok("\r\n");
 		}
-		return $resources;
+		return $routes;
 	}
 
 	public function route($routes, $test_uri = NULL, $test_method = NULL){
