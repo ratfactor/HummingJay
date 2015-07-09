@@ -1,0 +1,22 @@
+<phpunit
+	bootstrap="tests/bootstrap.php"
+	colors="true"
+	verbose="true"
+>
+	<testsuites>
+		<testsuite name= "HummingJay Suite">
+			<directory suffix="Test.php">tests</directory>
+		</testsuite>
+	</testsuites>
+	<php>
+		<includePath>src</includePath>
+	</php>
+	  <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">src</directory>
+        </whitelist>
+    </filter>
+
+
+
+</phpunit>

@@ -24,12 +24,20 @@ class Response{
 		header($this->httpStatus);
 		header("Content-Type: application/json");
 		header('Content-Type: text/html; charset=utf-8');
+		echo($this->getData());
+	}
 
+	public function addData($data){
+		$this->responseData = array_merge($this->responseData, $data);
+	}
+
+
+	public function getData(){
 		$myResponseData = $this->responseData; // in PHP, this COPIES responseData!
 		if($this->useHypermedia){
 			$myResponseData["hypermedia"] = $this->getHypermedia();
 		}
-		echo(json_encode((object)$myResponseData));
+		return json_encode((object)$myResponseData);
 	}
 
 	public function hyperTitle($title){
@@ -49,7 +57,7 @@ class Response{
 	}
 
 
-	private function getHypermedia(){
+	public function getHypermedia(){
 		$hypermedia = array();
 		if($this->title != ""){ $hypermedia["title"] = $this->title; }
 		if($this->description != ""){ $hypermedia["description"] = $this->description; }
@@ -62,74 +70,7 @@ class Response{
 		return (object)$hypermedia;
 	}
 
-	public function addData($data){
-		$this->responseData = array_merge($this->responseData, $data);
-	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	public function getHttpStatus(){
-		return $this->httpStatus;
-	}
-
-
-	public function findLinkByHref($href){ // testing utility
-		foreach($this->links as $link){
-			if($link->href == $href){ return $link; }
-		}
-		return false;
-	}
-
-	public function findLinkByMethod($method){ // testing utility
-		foreach($this->links as $link){
-			if($link->method == $method){ return $link; }
-		}
-		return false;
-	}
-
-	public function addChildLink($href, $title){
-		$this->addLink(new HmjResponseLinkChild($href, $title));
-	}
-
-	public function addParentLink($href, $title){
-		$this->addLink(new HmjResponseLinkParent($href, $title));
-	}
-
-	public function addSelfLink($href){
-		$this->addLink(new HmjResponseLinkSelf($href));
-	}
-
-	public function bareResponse($message){
-		$this->bareResponseMsg = $message;
-	}
-
-
-	public function getCompleteResponseData(){ // for testing
-		return $this->addHypermediaToResponseData();
-	}
-
-	public function doNotIncludeLinks(){
-		$this->includeLinks = false;
-	}
 
 }
 

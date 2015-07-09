@@ -3,7 +3,8 @@ namespace HummingJay;
 
 
 class HummingJay{
-	public function __construct($route_str){
+	public function __construct($route_str=NULL){
+		if($route_str === NULL){ return; }
 		$routes = $this->parseRouteString($route_str);
 		$this->route($routes);
 	}
