@@ -1,9 +1,11 @@
 <?php
-spl_autoload_register(function ($className) {
-    $classPath = str_replace(array('_', '\\'), '/', $className) . '.php';
+spl_autoload_register(function($class){
+	$class_parts = explode('\\', $class);
+	$class = 'src/' . end($class_parts) . '.php';
 
-	  if (@fopen($classPath, 'r', true)) {
-        require $classPath;
+	//echo "***Trying to load class path $class\n";
+	if (file_exists($class)) {
+        require $class;
     }
 
 });

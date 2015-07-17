@@ -23,29 +23,49 @@ class HummingJay{
 		return $routes;
 	}
 
-	public function route($routes, $test_uri = NULL, $test_method = NULL){
-		$uri = $test_uri ?: $this->serverUri();
-		$method = $test_method ?: $_SERVER['REQUEST_METHOD'];
 
+	public function route($routes){
+		$uri = $this->serverUri();
+		$method = $_SERVER['REQUEST_METHOD'];
+
+		$matchedResource = $this->matchUri($routes, $uri);
+		if ($matchedResource === null){
+			Response::send404("There is no resource at '$uri'.");
+		}
+
+		$req = new Request(); 
+		$req->uri = $uri;
+		$req->params = $matchedResource["params"];
+		$req->method = $method; 
+		$req->resource_uris = $routes;
+		$req->payload = $this->getPayload();
+
+
+
+		$resourceObj = $this->makeResource($matchedResource["classname"], $req);
+		if ($resourceObj === null){
+			Response::send500("Could not resolve resource at '$uri'.");
+		}
+
+		$resourceObj->callMethod($req);
+	}
+
+	public function matchUri($routes, $uri){
 		foreach ($routes as $res_uri => $res_class) {
 			$res_regex = "'^".preg_replace("'\{([A-Za-z0-9_]+)\}'", "(?P<\\1>[^/]+)", $res_uri)."(?:\?.*)?$'";
-			if(preg_match_all($res_regex, $uri, $uri_param_matches)){
-				if(!class_exists($res_class)){
-					Response::send500("Could not resolve resource at '$uri'.");
-				}
-				$req = (object)[
-					"uri" => $uri,
-					"params" => $this->makeParameterHash($uri_param_matches),
-					"method" => $method,
-					"resource_uris" => $routes,
-					"payload"=> $this->getPayload()
-				];
-				$resource = new $res_class($req);
-				$resource->callMethod($req);
-				return;
+			
+			if(preg_match_all($res_regex, $uri, $matches)){
+				return ["classname" => $res_class, "params" => $this->makeParameterHash($matches)];
 			}
 		}
-		Response::send404("There is no resource at '$uri'.");
+		return null;
+	}
+
+	public function makeResource($classname, $req){
+		if(!class_exists($classname)){
+			return null;
+		}
+		return new $classname($req);
 	}
 
 	private function makeParameterHash($matches){
