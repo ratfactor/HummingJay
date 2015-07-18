@@ -73,15 +73,13 @@ Property      | Description
 __uri__               | the API URI matched by your resource
 __params__            | an associative array of parameters from the URI
 __method__            | the HTTP method used, e.g. POST
-__resource_uris__     | a list of the other URIs in your API - generally used by the supplied default OPTIONS handler
-__payload__           | array containing the request body
-__..["raw"]__         | payload["raw"] contains the unprocessed content of the request body
-__..["exists"]__      | payload["exists"] is true if the request body was not empty
-__..["json_valid"]__  | payload["json_valid"] is true if the body was valid JSON data
-__..["json_error"]__  | payload["json_error"] contains a numeric error code if there were JSON decode errors
-__..["json_msg"]__    | payload["json_msg"] contains an English message if there were JSON decode errors
-__..["json"]__        | payload["json"] is the actual de-serialized (decoded) JSON data structure
- 
+__all_routes__        | the full list (used internally by the default OPTIONS handler
+__data__              | deserialized JSON data (or null if none)
+__rawData__           | raw request body (string)
+__dataWasEmpty__      | true if the request body was empty
+__jsonError__         | standard PHP numeric error code for json_decode
+__jsonMessage__       | string wth English description of a json_decode error
+
 Here's an example of getting the parameters of a URI:
 
 	// route: /foo/bar/{bar_id}
@@ -131,7 +129,7 @@ You an also send JSON strings back for client applications to decode:
 
 or even
 
-	$res->send400('{"error":"DECODE","error_msg","'.$req->payload['json_msg'].'"}');
+	$res->send400('{"error":"DECODE","error_msg","'.$req->jsonMessage.'"}');
 
 
 To send other statuses, you can do what the convenience methods do:
@@ -243,6 +241,7 @@ I intend to stick to the rules of [semantic versioning](http://semver.org/).
 
 Version | Date       | Description
 --------|------------|------------
+2.0.0   | 2015-07-18 | Refactored, added Request class, changed interface of request payload
 1.1.1   | 2015-06-19 | Removed dev-only dependency for PHPUnit (don't install via Composer)
 1.1.0   | 2015-06-19 | Added JSON-decoded payload to the request object, updated README
 1.0.0   | 2015-03-01 | HummingJay is in use in real projects
