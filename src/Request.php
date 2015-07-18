@@ -16,7 +16,7 @@ class Request{
 		if($get_server_env){
 			$this->uri = $this->serverUri();
 			$this->method = $_SERVER['REQUEST_METHOD'];
-			$this->payload = $this->getPayload();
+			$this->getServerData();
 		}
 
 	}
