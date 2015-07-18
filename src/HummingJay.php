@@ -25,28 +25,19 @@ class HummingJay{
 
 
 	public function route($routes){
-		$uri = $this->serverUri();
-		$method = $_SERVER['REQUEST_METHOD'];
-
-		$matchedResource = $this->matchUri($routes, $uri);
-		if ($matchedResource === null){
-			Response::send404("There is no resource at '$uri'.");
-		}
-
-		$req = new Request(); 
-		$req->uri = $uri;
-		$req->params = $matchedResource["params"];
-		$req->method = $method; 
+		$req = new Request(true); 
 		$req->resource_uris = $routes;
-		$req->payload = $this->getPayload();
-
-
+		
+		$matchedResource = $this->matchUri($routes, $req->uri);
+		if ($matchedResource === null){
+			Response::send404("There is no resource at '{$req->uri}'.");
+		}
+		$req->params = $matchedResource["params"];
 
 		$resourceObj = $this->makeResource($matchedResource["classname"], $req);
 		if ($resourceObj === null){
-			Response::send500("Could not resolve resource at '$uri'.");
+			Response::send500("Could not resolve resource at '{$req->uri}'.");
 		}
-
 		$resourceObj->callMethod($req);
 	}
 
@@ -78,40 +69,8 @@ class HummingJay{
 		return $parameters;
 	}	
 
-	private function serverUri(){
-		$uri = $_SERVER['REQUEST_URI'];
-		// remove the script name and/or dirname from the incoming URI
-		// NOTE: using ' as the regexp delimiters because the path likely has lots of /s
-		$scriptname = $_SERVER['SCRIPT_NAME'];
-		$scriptdir = dirname($scriptname);
-		return preg_replace("'^($scriptname|$scriptdir)'", "", $uri);
-	}
 
-	private function getPayload(){
-		$pl = [
-			"raw"=>file_get_contents("php://input"),
-			"exists"=>false,
-			"json_valid"=>false,
-			"json_error"=>JSON_ERROR_NONE,
-			"json_msg"=>'',
-			"json"=>null
-		];
-		if(strlen($pl["raw"]) == 0){ return $pl; }
 
-		// we've got *something*, try to decode as JSON
-		$pl["exists"] = true;
-		$pl["json"] = json_decode($pl["raw"]);
-		$pl["json_error"] = json_last_error();
-		switch ($pl["json_error"]) {
-			case JSON_ERROR_NONE: $pl['json_valid'] = true; break;
-			case JSON_ERROR_DEPTH: $pl['json_msg'] = 'Maximum stack depth exceeded'; break;
-			case JSON_ERROR_STATE_MISMATCH: $pl['json_msg'] = 'Underflow or the modes mismatch'; break;
-			case JSON_ERROR_CTRL_CHAR: $pl['json_msg'] = 'Unexpected control character found'; break;
-			case JSON_ERROR_SYNTAX: $pl['json_msg'] = 'Syntax error, malformed JSON'; break;
-			case JSON_ERROR_UTF8: $pl['json_msg'] = 'Malformed UTF-8 characters, possibly incorrectly encoded'; break;
-			default: $pl['json_msg'] = 'Unknown error'; break;
-		}
-		return $pl;
-	}
+	
 }
 
