@@ -23,7 +23,7 @@ class Resource{
 		$res->hyperDescription($this->description);
 
 		// add parent and children hyperlinks
-		foreach($req->resource_uris as $test_uri => $classname){
+		foreach($req->all_routes as $test_uri => $classname){
 			// replace uri params with any literals supplied so far
 			foreach($req->params as $param => $value){
 				$test_uri = str_replace('{'.$param.'}', $value, $test_uri);

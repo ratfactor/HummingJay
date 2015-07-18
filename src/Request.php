@@ -5,16 +5,12 @@ class Request{
 	public $uri = "";
 	public $params = [];
 	public $method = "";
-	public $resource_uris = "";
-
-
-	//public $payload = [];
+	public $all_routes = [];
 	public $data = null;
 	public $rawData = "";
 	public $dataWasEmpty = true;
 	public $jsonError = JSON_ERROR_NONE;
 	public $jsonMessage = "";
-
 
 	public function __construct($get_server_env = false){
 		if($get_server_env){
@@ -29,7 +25,6 @@ class Request{
 		$this->rawData = file_get_contents("php://input");
 		if(strlen($this->rawData) == 0){ return; }
 		$this->dataWasEmpty = false;
-
 		$decoded_data = json_decode($this->rawData);
 		$this->jsonError = json_last_error();
 
@@ -46,9 +41,8 @@ class Request{
 
 	private function serverUri(){
 		$uri = $_SERVER['REQUEST_URI'];
-		// remove the script name and/or dirname from the incoming URI
-		// NOTE: using ' as the regexp delimiters because the path likely has lots of /s
 		$scriptname = $_SERVER['SCRIPT_NAME'];
+		// remove the script name and/or dirname from the incoming URI
 		$scriptdir = dirname($scriptname);
 		return preg_replace("'^($scriptname|$scriptdir)'", "", $uri);
 	}
