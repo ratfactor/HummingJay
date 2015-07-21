@@ -17,7 +17,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new Request();
+        //Sending a blank string to indicate that we don't want data to 
+		//come from the server.
+        $this->object = new Request('');
     }
 
     /**
@@ -29,12 +31,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers HummingJay\Request::callMethod
-     * @todo   Implement testCallMethod().
+     * @covers HummingJay\Request::decodeJson
      */
-    public function testGetServerData()
+    public function testDecodeJson()
     {
-        $this->object->getServerData('');
+        $this->object->rawData = "";
+        $this->object->decodeJson();
 		$this->assertEquals (
         	true,
         	$this->object->dataWasEmpty,
@@ -42,8 +44,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     	); 
 
 
-
-	    $this->object->getServerData('I will break you.');
+		$this->object->rawData = "I will break you.";
+        $this->object->decodeJson();
 	    
 	    $this->assertEquals (
 	    	false,
@@ -69,9 +71,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         	"Data should be null if no JSON data is given"
     	); 
        
+    	$this->object->rawData = '{"animal":"cat"}';
+        $this->object->decodeJson();
 
-
-        $this->object->getServerData('{"animal":"cat"}');
         $this->assertEquals (
             'cat',
             $this->object->data->animal,

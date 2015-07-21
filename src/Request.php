@@ -13,17 +13,17 @@ class Request{
 	public $jsonMessage = "";
 
 
-	public function __construct($get_server_env = false){
-		if($get_server_env){
-			$this->uri = $this->serverUri();
+	public function __construct($data = null){
+		$this->data = $data;
+		if(is_null($data)){
 			$this->method = $_SERVER['REQUEST_METHOD'];
-			$this->getServerData();
+			$this->uri = $this->extractApiUri($_SERVER['REQUEST_URI'], $_SERVER['SCRIPT_NAME']);
+			$this->rawData = file_get_contents("php://input");
+			$this->decodeJson();
 		}
-
 	}
 
-	public function getServerData($test_rawData = null){
-		$this->rawData = $test_rawData !== null ? $test_rawData : file_get_contents("php://input");
+	public function decodeJson(){
 		if(strlen($this->rawData) == 0){ return; }
 		$this->dataWasEmpty = false;
 		$decoded_data = json_decode($this->rawData);
@@ -40,12 +40,9 @@ class Request{
 		}
 	}
 
-	private function serverUri(){
-		$uri = $_SERVER['REQUEST_URI'];
-		$scriptname = $_SERVER['SCRIPT_NAME'];
-		// remove the script name and/or dirname from the incoming URI
-		$scriptdir = dirname($scriptname);
-		return preg_replace("'^($scriptname|$scriptdir)'", "", $uri);
+	private function extractApiUri($req_uri, $api_base){
+		$base_dir = dirname($api_base);
+		return preg_replace("'^($api_base|$base_dir)'", "", $req_uri);
 	}
 
 }

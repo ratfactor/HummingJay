@@ -121,7 +121,7 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
      */
     public function testMakeResource()
     {
-        $req = new Request();
+        $req = new Request('');
 
         $this->assertEquals(
             null, 
