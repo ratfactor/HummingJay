@@ -12,6 +12,7 @@ class Request{
 	public $jsonError = JSON_ERROR_NONE;
 	public $jsonMessage = "";
 
+
 	public function __construct($get_server_env = false){
 		if($get_server_env){
 			$this->uri = $this->serverUri();
@@ -21,8 +22,8 @@ class Request{
 
 	}
 
-	private function getServerData(){
-		$this->rawData = file_get_contents("php://input");
+	public function getServerData($test_rawData = null){
+		$this->rawData = $test_rawData !== null ? $test_rawData : file_get_contents("php://input");
 		if(strlen($this->rawData) == 0){ return; }
 		$this->dataWasEmpty = false;
 		$decoded_data = json_decode($this->rawData);
