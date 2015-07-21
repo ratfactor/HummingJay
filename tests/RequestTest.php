@@ -82,4 +82,29 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
 
     }
+
+
+    /**
+     * @covers HummingJay\Request::extractApiUri
+     */
+    public function testExtractApiUri()
+    {
+        $this->assertEquals (
+            '/',
+            $this->object->extractApiUri("/api/v1/", "/api/v1/index.php"),
+            "Root resource request with no filename in uri"
+        ); 
+        $this->assertEquals (
+            '/',
+            $this->object->extractApiUri("/api/v1/index.php/", "/api/v1/index.php"),
+            "Root resource request with filename in uri"
+        ); 
+        $this->assertEquals (
+            '/users/56/report',
+            $this->object->extractApiUri("/api/v1/users/56/report", "/api/v1/index.php"),
+            "Multi-level resource path"
+        ); 
+    }
+
 }
+
