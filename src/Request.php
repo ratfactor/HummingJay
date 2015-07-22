@@ -42,7 +42,8 @@ class Request{
 
 	public function extractApiUri($req_uri, $api_base){
 		$base_dir = dirname($api_base);
-		return preg_replace("'^($api_base|$base_dir)'", "", $req_uri); // '=regex delimiter
+		$uri = preg_replace("'^($api_base|$base_dir)'", "", $req_uri); // '=regex delimiter
+		return $uri === '' ? '/' : $uri;
 	}
 
 }

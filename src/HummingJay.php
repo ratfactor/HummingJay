@@ -25,7 +25,7 @@ class HummingJay{
 
 
 	public function route($routes){
-		$req = new Request(true); 
+		$req = new Request(); 
 		$req->all_routes = $routes;
 		
 		$matchedResource = $this->matchUri($routes, $req->uri);

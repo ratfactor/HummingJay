@@ -104,6 +104,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             $this->object->extractApiUri("/api/v1/users/56/report", "/api/v1/index.php"),
             "Multi-level resource path"
         ); 
+
+        $this->assertEquals (
+            '/',
+            $this->object->extractApiUri("/", "/index.php"),
+            "API at root / should work - was a found bug"
+        ); 
     }
 
 }
