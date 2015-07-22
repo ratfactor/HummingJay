@@ -20,7 +20,7 @@ HummingJay is a PHP 5.5+ library for creating REST APIs using the **hm-json** (t
 
 This example is unrealistically tiny.  But it is perfectly valid and shows the two basic elements of creating an API with HummingJay: creating Resources ("Foo") and defining URI paths ("/foo") to resolve to those classes - also known as "routing".
 
-Look in the source at the heavily commented `demo/index.php` file for a much more thorough example of creating resources.
+Look in the source at the heavily commented `demo/index.php` file for a much more thorough example of creating resources.  See "Running Tests/Demo" below for more about the Demo.
 
 ## Routing
 
@@ -209,6 +209,27 @@ Results in response body:
 	}
 
 _Note: You will get undefined behavior if  you create your own top-level element named "hypermedia", so if you think that's a possibility, don't include hm-json hypermedia elements in your response._
+
+
+## Running Tests/Demo
+
+If you have PHPUnit installed, you can run the unit tests with:
+
+	phpunit
+
+This project also includes a Vagrantfile, which you can use to install and provision a virtual machine complete with PHP 5.6, PHPUnit, and Apache webserver  configured to display the included HummingJay Demo website.  [Learn about Vagrant.](https://www.vagrantup.com/)
+
+Once you have installed Vagrant, you can run the following commands to perform unit testing:
+
+	> vagrant up
+	> vagrant ssh
+	$ cd /vagrant
+	$ phpunit
+
+With the virtual machine running, you can also visit the Demo website at http://localhost:8787/
+
+The demo uses the catchily named [hm-json Browser](https://bitbucket.org/ratfactor/hm-json-browser/wiki/Home) to navigate a tiny demonstration Books collection API.
+
 
 ## License
 

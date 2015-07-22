@@ -1,6 +1,12 @@
 <?php
 
 /*
+	NOTE: You can run this demo through the browser within a Vagrant virtual
+	machine. See the Vagrantfile at the root of the project.
+*/
+
+
+/*
 	Realistically, your modern project is likely to use namespacing, so this
 	demo does as well (Demo). HummingJay does not require it.
 
@@ -11,8 +17,11 @@
 namespace Demo;
 
 
+
 /*
 	Use the Composer-supplied autoloader to gain access to HummingJay's classes.
+	NOTE: You'll need to have composer generate the autoloader first:
+		composer install
 */ 
 
 require_once "../vendor/autoload.php";
