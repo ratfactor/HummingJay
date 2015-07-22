@@ -17,6 +17,13 @@
 namespace Demo;
 
 
+/*
+	Attempt to turn on error reporting for the demo
+*/
+
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 
 /*
 	Use the Composer-supplied autoloader to gain access to HummingJay's classes.
@@ -81,8 +88,8 @@ class FakeBookDb{
 */
 
 class Root extends Resource{
-	public $title = "Library API Root";
-	public $description = "Welcome! Try the /books/ (Books Collection) resource.";
+	public $title = "Books API Root";
+	public $description = "Welcome to the HummingJay Books Demo!";
 }
 
 
@@ -254,6 +261,14 @@ class AuthorsCollection extends Resource{
 }
 
 
+class Harmless extends Resource{
+	public $title = "Authors";
+	public $description = "You can GET a list of the authors of all of the books available through this API.";
+
+	public function get($req, $res){ return $res; }
+}
+
+
 /*
 	And finally, here's the fun part. The paths are defined in an extremely
 	simple text format:
@@ -278,6 +293,7 @@ $api = new HummingJay(<<<'API'
 /books/{book_id}/reviews - Demo\ReviewsCollection
 /books/{book_id}/reviews/{review_id} - Demo\Review
 /authors - Demo\AuthorsCollection
+/harmless - Demo\Harmless
 API
 );
 

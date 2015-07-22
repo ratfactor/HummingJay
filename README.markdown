@@ -226,9 +226,19 @@ Once you have installed Vagrant, you can run the following commands to perform u
 	$ cd /vagrant
 	$ phpunit
 
-With the virtual machine running, you can also visit the Demo website at http://localhost:8787/
+With the virtual machine running, you can also visit the Demo website at http://localhost:8787/browser.html  *See note below!
 
 The demo uses the catchily named [hm-json Browser](https://bitbucket.org/ratfactor/hm-json-browser/wiki/Home) to navigate a tiny demonstration Books collection API.
+
+
+### Demo Note
+
+Due to an *extremely* irritating setting hidden somewhere in the bowels of the Apache or PHP configuration, you will not be able to fully navigate the demo UNLESS you use this URL instead: http://localhost:8787/browser.html#/index.php
+
+Apparently this version of Apache is configured to handle OPTIONS method requests all by itself unless it sees that mod_php will be handling the request (which it only determines if "index.php" is actually *in* the submitted URL).  This wonderful magical feature cost me valuable time with my family and I want it back.
+
+I have no idea where the setting is. I've grepped and Googled to my wit's end.  Most of my time is spend chasing garbage like this down, not actually writing awesome code.  If anybody has a foolproof method of tracking down Apache's decision making process for something like this, I'd be delighted to hear about it.  Otherwise, let's all just light a candle in honor of the millions of completely wasted hours spent each year on these sorts of delightful web development secrets.
+
 
 
 ## License
