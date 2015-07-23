@@ -15,6 +15,13 @@ Vagrant.configure(2) do |config|
     if ! [ -L /var/www ]; then
       rm -rf /var/www/html
       ln -fs /vagrant/demo /var/www/html
-    fi    
+    fi 
+    mkdir /tmp/composer
+    cd /tmp/composer
+    wget https://getcomposer.org/installer 2>&1 | grep -i 'saved\|failed\|error'
+    php installer
+    mv composer.phar /usr/bin/composer
+    cd /vagrant
+    composer update   
   SHELL
 end
