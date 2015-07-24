@@ -272,6 +272,7 @@ I intend to stick to the rules of [semantic versioning](http://semver.org/).
 
 Version | Date       | Description
 --------|------------|------------
+2.0.1   | 2015-07-24 | Added Vagrant VM for testing/demo, refactored and added more tests
 2.0.0   | 2015-07-18 | Refactored, added Request class, changed interface of request payload
 1.1.1   | 2015-06-19 | Removed dev-only dependency for PHPUnit (don't install via Composer)
 1.1.0   | 2015-06-19 | Added JSON-decoded payload to the request object, updated README
