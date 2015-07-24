@@ -14,8 +14,7 @@ class Resource{
 		if(!method_exists($this, $method)){
 			Response::send405("The ".strtoupper($method)." method is not supported by this resource. Try an OPTIONS request for a list of supported methods.");
 		}
-		$res = $this->$method($req, new Response());
-		if($res){ $res->send(); }
+		return $this->$method($req, new Response());
 	}
 
 	protected function options($req, $res){

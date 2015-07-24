@@ -38,7 +38,8 @@ class HummingJay{
 		if ($resourceObj === null){
 			Response::send500("Could not resolve resource at '{$req->uri}'.");
 		}
-		$resourceObj->callMethod($req);
+		$res = $resourceObj->callMethod($req);
+		if($res){ $res->send(); }
 	}
 
 	public function matchUri($routes, $uri){

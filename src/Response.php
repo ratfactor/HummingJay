@@ -4,7 +4,7 @@ namespace HummingJay;
 
 class Response{
 	private $useHypermedia = false;
-	private $title = '';
+	public $title = '';
 	private $description = '';
 
 	private $httpStatus = '';
