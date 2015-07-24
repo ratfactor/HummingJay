@@ -34,10 +34,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetData()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+      
     }
 
 
@@ -47,10 +44,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
      */
     public function testHyperTitle()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+        
     }
 
     /**
@@ -59,10 +53,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
      */
     public function testHyperDescription()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+       
     }
 
     /**
@@ -71,10 +62,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
      */
     public function testHyperLink()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+    
     }
 
 
@@ -83,10 +71,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetHypermedia()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+      
     }
 
 
@@ -98,9 +83,6 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddData()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+     
     }
 }
