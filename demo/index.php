@@ -42,7 +42,7 @@ require_once "../vendor/autoload.php";
 */
 
 use HummingJay\Resource;
-use HummingJay\Response;
+use HummingJay\Server;
 use HummingJay\HummingJay;
 
 
@@ -111,29 +111,30 @@ class BooksCollection extends Resource{
 	public $title = "Books Collection";
 	public $description = "POST a new book or GET a list of books (in hm-json link format).";
 
-	public function get($req, $res){
+	public function get($server){
 		foreach(FakeBookDb::$books as $id=>$book){
-			$res->hyperLink([
+			$server->hyperLink([
 				"title" => $book['title'],
 				"href" => "/books/$id",
 				"rel" => 'item'
 			]);
 		}
-		return $res;
+		return $server;
 	}
 
-	public function post($req, $res){
-		$res->addData(["new_id"=>100]); // pretend it worked
+	public function post($server){
+		$server->addData(["new_id"=>100]); // pretend it worked
+		return $server;
 	}
 }
 
 
 /*
 	The Book resource will be supplied with a book_id parameter. It is 
-	available to the method handlers in the $req object supplied to the 
+	available to the method handlers in the $server object supplied to the 
 	methods in the params hash (array):
 
-		$req->params["book_id"]
+		$server->params["book_id"]
 
 	getBook() is used by the method handlers to determine if the book exists and 
 	can override any other behavior if the book does not exist by immediately 
@@ -169,23 +170,23 @@ class Book extends Resource{
 	public $description = "You can GET this book's data, POST updates, or DELETE it.";
 	private $book = NULL;
 
-	public function __construct($req){
-		$id = $req->params["book_id"];
+	public function __construct($server){
+		$id = $server->params["book_id"];
 		$this->book = FakeBookDb::getBook($id);
 		if(is_null($this->book)){
-			Response::send404("Could not find a book with ID $id.");
+			Server::send404("Could not find a book with ID $id.");
 		}
 	}
 
-	public function options($req, $res){
-		$res = parent::options($req, $res);
-		$res->hyperTitle($this->book['title']);
-		return $res;
+	public function options($server){
+		$server = parent::options($server);
+		$server->hyperTitle($this->book['title']);
+		return $server;
 	}
 
-	public function get($req, $res){
-		$res->addData($this->book);
-		return $res;
+	public function get($server){
+		$server->addData($this->book);
+		return $server;
 	}
 
 	public function data(){
@@ -197,7 +198,7 @@ class Book extends Resource{
 /*
 	The reviews collection for a book demonstrates the openness of the program
 	architecture - the reviews for a book queries the Book resource for a book
-	by the given ID (using the request object $req).  This allows the check for 
+	by the given ID (using the $server object).  This allows the check for 
 	a valid book with an ID (and generating a 404 error if not found, etc.) to 
 	be kept in one place.  
 
@@ -211,20 +212,20 @@ class ReviewsCollection extends Resource{
 	public $title = "Reviews for a book";
 	public $description = "GET the list of reviews for this book.";
 
-	public function options($req, $res){
-		$book = new Book($req);
-		$res = parent::options($req, $res);
-		$res->hyperTitle("Reviews for ".$book->data()['title']);
-		return $res;
+	public function options($server){
+		$book = new Book($server);
+		$server = parent::options($server);
+		$server->hyperTitle("Reviews for ".$book->data()['title']);
+		return $server;
 	}
 
-	public function get($req, $res){
+	public function get($server){
 		// generate fake links
 		foreach(["Love it", "Boring!", "Thoughtful", "My Favorite book"] as $title){
-			$link_uri = $req->uri."/".rand(10,60);
-			$res->hyperLink(["title" => $title, "href" => $link_uri, "rel" => 'item']);
+			$link_uri = $server->uri."/".rand(10,60);
+			$server->hyperLink(["title" => $title, "href" => $link_uri, "rel" => 'item']);
 		}
-		return $res;
+		return $server;
 	}
 }
 
@@ -232,15 +233,15 @@ class Review extends Resource{
 	public $title = "Book Review";
 	public $description = "GET this resource for the full data.";
 
-	public function get($req, $res){
-		$res->addData([
-			"book_id"=>$req->params["book_id"],
+	public function get($server){
+		$server->addData([
+			"book_id"=>$server->params["book_id"],
 			"review_author"=>"John Doe",
 			"title"=>"This book is great!",
 			"content"=>"Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
 			"rating"=>3
 		]);
-		return $res;
+		return $server;
 	}
 }
 
@@ -254,18 +255,10 @@ class AuthorsCollection extends Resource{
 	public $title = "Authors";
 	public $description = "You can GET a list of the authors of all of the books available through this API.";
 
-	public function get($req, $res){
-		$res->addData(["authors_list"=>FakeBookDb::getAuthors()]);
-		return $res;
+	public function get($server){
+		$server->addData(["authors_list"=>FakeBookDb::getAuthors()]);
+		return $server;
 	}
-}
-
-
-class Harmless extends Resource{
-	public $title = "Authors";
-	public $description = "You can GET a list of the authors of all of the books available through this API.";
-
-	public function get($req, $res){ return $res; }
 }
 
 
@@ -293,7 +286,6 @@ $api = new HummingJay(<<<'API'
 /books/{book_id}/reviews - Demo\ReviewsCollection
 /books/{book_id}/reviews/{review_id} - Demo\Review
 /authors - Demo\AuthorsCollection
-/harmless - Demo\Harmless
 API
 );
 

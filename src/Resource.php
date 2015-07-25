@@ -5,37 +5,38 @@ class Resource{
 	protected $title = '';
 	protected $description = '';
 
-	function __construct($req){
+	function __construct($server){
 		return;
 	}
 
-	public function callMethod($req){
-		$method = strtolower($req->method);
+	public function callMethod($server){
+		$method = strtolower($server->method);
 		if(!method_exists($this, $method)){
-			Response::send405("The ".strtoupper($method)." method is not supported by this resource. Try an OPTIONS request for a list of supported methods.");
+			$server->send405("The ".strtoupper($method)." method is not supported by this serverource. Try an OPTIONS serveruest for a list of supported methods.");
+			return $server;
 		}
-		return $this->$method($req, new Response());
+		return $this->$method($server);
 	}
 
-	protected function options($req, $res){
-		$res->hyperTitle($this->title);
-		$res->hyperDescription($this->description);
+	protected function options($server){
+		$server->hyperTitle($this->title);
+		$server->hyperDescription($this->description);
 
 		// add parent and children hyperlinks
-		foreach($req->all_routes as $test_uri => $classname){
+		foreach($server->all_routes as $test_uri => $classname){
 			// replace uri params with any literals supplied so far
-			foreach($req->params as $param => $value){
+			foreach($server->params as $param => $value){
 				$test_uri = str_replace('{'.$param.'}', $value, $test_uri);
 			}
 			
-			if($test_uri == $req->uri) continue; // self!
+			if($test_uri == $server->uri) continue; // self!
 			// test for parent
-			if($test_uri == str_replace('\\', '/', dirname($req->uri))){
-				$res->hyperLink(["title" => $test_uri, "href" => $test_uri, "rel" => 'parent']);
+			if($test_uri == str_replace('\\', '/', dirname($server->uri))){
+				$server->hyperLink(["title" => $test_uri, "href" => $test_uri, "rel" => 'parent']);
 			}
 			// test for children
-			if(preg_match("'^".rtrim($req->uri, '/')."/([^/]+)$'", $test_uri, $matches)){
-				$res->hyperLink(["title" => $matches[1], "href" => $test_uri, "rel" => 'child']);
+			if(preg_match("'^".rtrim($server->uri, '/')."/([^/]+)$'", $test_uri, $matches)){
+				$server->hyperLink(["title" => $matches[1], "href" => $test_uri, "rel" => 'child']);
 			}
 		}
 
@@ -43,11 +44,11 @@ class Resource{
 		foreach(["OPTIONS", "GET", "PUT", "POST", "DELETE", "PATCH", "HEAD"] as $method){
 			$m = strtolower($method);
 			if(method_exists($this, $m)){ 
-				$res->hyperLink(["title"=> "Self $method", "href" => $req->uri, "rel" => 'self', "method" => $method]);
+				$server->hyperLink(["title"=> "Self $method", "href" => $server->uri, "rel" => 'self', "method" => $method]);
 			}
 		}
 
-		return $res;
+		return $server;
 	}
 
 }

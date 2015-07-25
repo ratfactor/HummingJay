@@ -23,7 +23,9 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new HummingJay();
+        $server = new Server();
+        $server->uri = '/foo';
+        $this->object = new HummingJay(null, $server);
     }
 
     /**
@@ -32,6 +34,20 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
      */
     protected function tearDown()
     {
+    }
+
+
+
+    /**
+     * @covers HummingJay\HummingJay::parseRouteString
+     * @todo   Implement testParseRouteString().
+     */
+    public function testRoute()                                            
+    {
+        $routes = $this->object->parseRouteString("/foo - \\HummingJay\\Foo");
+        //$this->object->route($routes);
+
+        
     }
 
     /**
@@ -118,18 +134,18 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
      */
     public function testMakeResource()
     {
-        $req = new Request('');
+        //$req = new Request('');   <------- need to pass $server to makeResource() ????
 
         $this->assertEquals(
             null, 
-            $this->object->makeResource("NoGoats", $req), 
+            $this->object->makeResource("NoGoats"), 
             "Class that doesn't exist returns null"
         );
 // todo add a test to test your test in a postive class existing on this plane of existance.
 
         $this->assertInstanceOf(
             "HummingJay\Foo", 
-            $this->object->makeResource("HummingJay\Foo", $req),
+            $this->object->makeResource("HummingJay\Foo"),
             "Check if a Foo object is returned."
         );
 

@@ -4,9 +4,9 @@ namespace HummingJay;
 class TestResource extends Resource{
     // For testCallMethod
 
-    public function get($req, $res){
-        $res->title = "Sitting Still Like a Frog";
-        return $res;
+    public function get($server){
+        $server->title = "Sitting Still Like a Frog";
+        return $server;
     }
 } 
 
@@ -26,7 +26,7 @@ class ResourceTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        //$this->object = new Resource(NULL);
+
     }
 
     /**
@@ -43,14 +43,14 @@ class ResourceTest extends \PHPUnit_Framework_TestCase
      */
     public function testCallMethod()
     {
-        $req = new Request("");
-        $req->method = "GET";
-        $tr = new TestResource($req);
-        $res = $tr->callMethod($req);
+        $server = new Server("");
+        $server->method = "GET";
+        $tr = new TestResource($server);
+        $server = $tr->callMethod($server);
 
         $this->assertEquals(
             "Sitting Still Like a Frog",
-            $res->title,
+            $server->title,
             "Returned title that verifies that the get handler of our test resource was called."
         );
     }

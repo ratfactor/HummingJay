@@ -3,10 +3,14 @@ namespace HummingJay;
 
 
 class HummingJay{
-	public function __construct($route_str=NULL){
-		if($route_str === NULL){ return; }
-		$routes = $this->parseRouteString($route_str);
-		$this->route($routes);
+	private $server = null;
+
+	public function __construct($route_str=null, $server = null){
+		$this->server = $server === null ? new Server(true) : $server;
+		if($route_str !== null){
+			$routes = $this->parseRouteString($route_str);
+			$this->route($routes);
+		}
 	}
 
 	public function parseRouteString($route_str){
@@ -25,39 +29,40 @@ class HummingJay{
 
 
 	public function route($routes){
-		$req = new Request(); 
-		$req->all_routes = $routes;
+		$this->server->all_routes = $routes;
 		
-		$matchedResource = $this->matchUri($routes, $req->uri);
+		$matchedResource = $this->matchUri($routes, $this->server->uri);
 		if ($matchedResource === null){
-			Response::send404("There is no resource at '{$req->uri}'.");
+			$this->server->send404("There is no resource at '{$this->server->uri}'.");
+			return;
 		}
-		$req->params = $matchedResource["params"];
+		$this->server->params = $matchedResource["params"];
 
-		$resourceObj = $this->makeResource($matchedResource["classname"], $req);
+		$resourceObj = $this->makeResource($matchedResource["classname"], $this->server);
 		if ($resourceObj === null){
-			Response::send500("Could not resolve resource at '{$req->uri}'.");
+			$this->server->send500("Could not resolve resource at '{$this->server->uri}'.");
+			return;
 		}
-		$res = $resourceObj->callMethod($req);
-		if($res){ $res->send(); }
+		$this->server = $resourceObj->callMethod($this->server);
+		if($this->server){ $this->server->send(); }
 	}
 
 	public function matchUri($routes, $uri){
-		foreach ($routes as $res_uri => $res_class) {
-			$res_regex = "'^".preg_replace("'\{([A-Za-z0-9_]+)\}'", "(?P<\\1>[^/]+)", $res_uri)."(?:\?.*)?$'";
+		foreach ($routes as $route_uri => $route_class) {
+			$uri_regex = "'^".preg_replace("'\{([A-Za-z0-9_]+)\}'", "(?P<\\1>[^/]+)", $route_uri)."(?:\?.*)?$'";
 			
-			if(preg_match_all($res_regex, $uri, $matches)){
-				return ["classname" => $res_class, "params" => $this->makeParameterHash($matches)];
+			if(preg_match_all($uri_regex, $uri, $matches)){
+				return ["classname" => $route_class, "params" => $this->makeParameterHash($matches)];
 			}
 		}
 		return null;
 	}
 
-	public function makeResource($classname, $req){
+	public function makeResource($classname){
 		if(!class_exists($classname)){
 			return null;
 		}
-		return new $classname($req);
+		return new $classname($this->server);
 	}
 
 	private function makeParameterHash($matches){
