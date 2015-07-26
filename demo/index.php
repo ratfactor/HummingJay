@@ -2,16 +2,19 @@
 
 /*
 	NOTE: You can run this demo through the browser within a Vagrant virtual
-	machine. See the Vagrantfile at the root of the project.
+	machine. See the README and Vagrantfile at the root of the project.
 */
+
+
+
 
 
 /*
 	Realistically, your modern project is likely to use namespacing, so this
-	demo does as well (Demo). HummingJay does not require it.
+	demo does as well. HummingJay does not require it.
 
 	Unrealistically, this demo contains everything in one file. It's much more
-	likely that you'll have your Resource classes in their own files.
+	likely that you'll have your resource classes in their own files.
 */ 
 
 namespace Demo;
@@ -29,15 +32,16 @@ error_reporting(E_ALL);
 	Use the Composer-supplied autoloader to gain access to HummingJay's classes.
 	NOTE: You'll need to have composer generate the autoloader first:
 		composer install
+	This will be done automatically by the Vagrant provisioning script, if you're
+	using it.
 */ 
 
 require_once "../vendor/autoload.php";
 
 
 /*
-	For the sake of brevity below, I am 'use'-ing classes from 
-	HummingJay. You could also use fully qualified names for the classes
-	like so:
+	For the sake of brevity, I am 'use'-ing classes from HummingJay. 
+	You could also use fully qualified names for the classes like so:
 		class Book extends \HummingJay\Resource{ ... }
 */
 
@@ -49,6 +53,8 @@ use HummingJay\HummingJay;
 /*
 	The FakeBookDb class exists for demo purposes only. As you can see,
 	it's just an array and a getBook() method to supply us with data.
+
+	This has nothing to do with HummingJay and everything to do with the demo.
 */
 
 class FakeBookDb{
@@ -81,7 +87,7 @@ class FakeBookDb{
 /*
 	Here is the first resource defined in our demo API - the Root element.  
 	You can scroll all the way to the bottom of this file to see how the 
-	paths are defined. Root corresponds with the "/" resource path.
+	routes are defined. Root corresponds with the "/" resource URI.
 
 	This example is about as simple as it gets. Overriding the default
 	title and description are not required, but certainly recommended!
@@ -100,10 +106,10 @@ class Root extends Resource{
 	very friendly as it allows programs (or people using the hm-json Browser)
 	to continue traversing your API in an automated fashion.
 
-	By default, methods other than OPTIONS do not return hm-json hypermedia
-	data.
+	Methods other than the supplied OPTIONS handler do not return hm-json hypermedia
+	data by default.
 
-	The POST method is clearly just a fake stub as the database cannot be 
+	The POST method is just a fake stub since the database cannot be meaningfully
 	modified in this demo.
 */
 
@@ -123,7 +129,7 @@ class BooksCollection extends Resource{
 	}
 
 	public function post($server){
-		if($server->requestData){
+		if($server->requestData){ // make sure the user sent something valid
 			$server->addData(["new_id"=>100]); // pretend it worked
 		}
 		return $server;
@@ -131,25 +137,27 @@ class BooksCollection extends Resource{
 }
 
 
+
 /*
-	The Book resource will be supplied with a book_id parameter. It is 
-	available to the method handlers in the $server object supplied to the 
-	methods in the params hash (array):
+	The Book resource will be supplied with a book_id parameter via the params
+	array in the $server object, which is sent to every method handler as well
+	as the constructor for each Resource.
 
 		$server->params["book_id"]
 
-	getBook() is used by the method handlers to determine if the book exists and 
-	can override any other behavior if the book does not exist by immediately 
-	returning an HTTP 404 error message.  HummingJay tries to be as agnostic
-	as possible about the structure of your program and this is only an example.
+	FakeBookDb::getBook() is used by the resource's constructor to determine if 
+	the book exists. If it does not, it sets the HTTP response status to 404 and
+	then calls the Resource method halt() to prevent any method handlers from
+	being called.
+
+	HummingJay tries to be as agnostic as possible about the structure of your 
+	program and this is only an example.
 
 	The Book resource also demonstrates overriding the OPTIONS method handler to
 	check for the existance of the requested book and to update the title of the
 	hm-json return data to make it specific to the book.  Notice that the
 	default handler is used to generate the boilerplate parent/child links, etc.
-	which would otherwise be tedious to re-create by hand.  Then just the 
-	hm-json title property (via hyperTitle()) of the generated reponse is 
-	altered to reflect the book's actual title.
+	which would otherwise be tedious to re-create by hand.
 
 	You can see how simple the GET method handler is. A request for URI
 
@@ -163,66 +171,63 @@ class BooksCollection extends Resource{
 		    "author": "Jane Austen"
 		}	
 
-	To see why I've made a public data() method, continue scrolling down to 
-	the ReviewsCollection class.
+	To see what else makes this class interesting, continue to ReviewsCollection
 */
 
 class Book extends Resource{
 	public $title = "A Book";
 	public $description = "You can GET this book's data, POST updates, or DELETE it.";
-	private $book = NULL;
+	public $data = NULL;
 
 	public function __construct($server){
 		$id = $server->params["book_id"];
-		$this->book = FakeBookDb::getBook($id);
-		if(is_null($this->book)){
-			Server::send404("Could not find a book with ID $id.");
+		$this->data = FakeBookDb::getBook($id);
+		if(is_null($this->data)){
+			$server->setStatus(404, "Could not find a book with ID $id.");
+			$this->halt();
 		}
 	}
 
 	public function options($server){
 		$server = parent::options($server);
-		$server->hyperTitle($this->book['title']);
+		$server->hyperTitle($this->data['title']);
 		return $server;
 	}
 
 	public function get($server){
-		$server->addData($this->book);
+		$server->addData($this->data);
 		return $server;
-	}
-
-	public function data(){
-		return $this->book;
 	}
 }
 
 
 /*
-	The reviews collection for a book demonstrates the openness of the program
-	architecture - the reviews for a book queries the Book resource for a book
-	by the given ID (using the $server object).  This allows the check for 
-	a valid book with an ID (and generating a 404 error if not found, etc.) to 
-	be kept in one place.  
+	ReviewsCollection relies on the Book class to look up a book. This allows the 
+	code to remain as D.R.Y. as possible.  Book even handles setting the 404.
+
+	Review does the same thing.
 
 	HummingJay does not provide anything to either help or hinder this sort of 
 	interaction between your resources.  This is merely "food for thought."
-
-	The book reviews themselves don't demonstrate anything interesting.
 */
 
 class ReviewsCollection extends Resource{
 	public $title = "Reviews for a book";
 	public $description = "GET the list of reviews for this book.";
+	private $book = null;
+
+	public function __construct($server){ 
+		$this->book = new Book($server); 
+		if(!$this->book->data){ $this->halt(); }
+	}
 
 	public function options($server){
-		$book = new Book($server);
-		$server = parent::options($server);
-		$server->hyperTitle("Reviews for ".$book->data()['title']);
+		$server = parent::options($server); // generate hypermedia, etc.
+		$server->hyperTitle("Reviews for ".$this->book->data['title']);
 		return $server;
 	}
 
 	public function get($server){
-		// generate fake links
 		foreach(["Love it", "Boring!", "Thoughtful", "My Favorite book"] as $title){
 			$link_uri = $server->uri."/".rand(10,60);
 			$server->hyperLink(["title" => $title, "href" => $link_uri, "rel" => 'item']);
@@ -234,14 +239,21 @@ class ReviewsCollection extends Resource{
 class Review extends Resource{
 	public $title = "Book Review";
 	public $description = "GET this resource for the full data.";
+	private $book = null;
+
+	public function __construct($server){ 
+		$this->book = new Book($server); 
+		if(!$this->book->data){ $this->halt(); }
+	}
 
 	public function get($server){
 		$server->addData([
-			"book_id"=>$server->params["book_id"],
+			"book_id"=>$this->book->data['id'],
+			"book_title"=>$this->book->data['title'],
 			"review_author"=>"John Doe",
-			"title"=>"This book is great!",
+			"review_title"=>"This book is great!",
 			"content"=>"Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
-			"rating"=>3
+			"rating"=>rand(1,5)
 		]);
 		return $server;
 	}
@@ -249,8 +261,8 @@ class Review extends Resource{
 
 
 /*
-	The authors collection only exists so that we can have another top-level
-	item (/authors) under the root (/) of the API.
+	The AuthorsCollection only exists so that we can have another top-level
+	resource URI "/authors".  Otherwise the root would look empty and sad.
 */
 
 class AuthorsCollection extends Resource{

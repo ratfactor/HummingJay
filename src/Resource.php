@@ -4,18 +4,24 @@ namespace HummingJay;
 class Resource{
 	protected $title = '';
 	protected $description = '';
+	protected $halted = false;
 
 	function __construct($server){
 		return;
 	}
 
 	public function callMethod($server){
+		if($this->halted){ return $server; }
 		$method = strtolower($server->method);
 		if(!method_exists($this, $method)){
 			$server->send405("The ".strtoupper($method)." method is not supported by this serverource. Try an OPTIONS serveruest for a list of supported methods.");
 			return $server;
 		}
 		return $this->$method($server);
+	}
+
+	protected function halt(){
+		$this->halted = true;
 	}
 
 	protected function options($server){
