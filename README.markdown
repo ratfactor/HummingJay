@@ -82,7 +82,6 @@ Property      | Description
 `requestData`       | deserialized JSON data (or null if none)
 `rawRequestData`    | raw request body (string)
 `jsonError`         | string with terse description of error or 'none'
-`jsonMessage`       | string wth English description of a json_decode error
 
 Here's an example which gets a URI parameter and some JSON data from the request body:
 
