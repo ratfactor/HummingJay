@@ -36,52 +36,47 @@ class ServerTest extends \PHPUnit_Framework_TestCase
      */
     public function testDecodeJson()
     {
-        $this->object->rawData = "";
+        $this->object->rawRequestData = "";
         $this->object->decodeJson();
         $this->assertEquals (
-            true,
-            $this->object->dataWasEmpty,
-            "dataWasEmpty is true if given a blank string."
+            'empty',
+            $this->object->jsonError,
+            "jsonError is 'empty' if given a blank string."
         ); 
 
 
-        $this->object->rawData = "I will break you.";
+        $this->object->method = "POST";
+        $this->object->rawRequestData = "[bad json]";
         $this->object->decodeJson();
-        
-        $this->assertEquals (
-            false,
-            $this->object->dataWasEmpty,
-            "dataWasEmpty is false if given a string."
+        $this->assertNotEquals (
+            'empty',
+            $this->object->jsonError,
+            "jsonError should not be 'empty' if given a non-blank string."
         );
-       
         $this->assertEquals (
-            'Syntax error, malformed JSON',
-            $this->object->jsonMessage,
-            "Verify jsonMessage is set when given invalid JSON"
-        ); 
-       
-        $this->assertEquals (
-            JSON_ERROR_SYNTAX,
+            'syntax_error',
             $this->object->jsonError,
             "Verify jsonError is set when given invalid JSON"
         ); 
-        
+        $this->assertEquals (
+            400,
+            $this->object->httpStatus,
+            "Verify a status of 400 is returned when there is invalid json and the http method was one which expects data"
+        ); 
         $this->assertEquals (
             null,
-            $this->object->data,
-            "Data should be null if no JSON data is given"
+            $this->object->requestData,
+            "requestData should be null if no JSON data is given"
         ); 
        
-        $this->object->rawData = '{"animal":"cat"}';
-        $this->object->decodeJson();
 
+        $this->object->rawRequestData = '{"animal":"cat"}';
+        $this->object->decodeJson();
         $this->assertEquals (
             'cat',
-            $this->object->data->animal,
-            "Requsted JSON Data was good."
+            $this->object->requestData->animal,
+            "Requsted JSON data was good."
         ); 
-
-
     }
 
 
@@ -116,43 +111,191 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
 
 
+    /**
+     * @covers HummingJay\Server::setStatus
+     */
+    public function testSetStatus()
+    {
+        $this->object->setStatus(500, "Nothing good happened.");
+        $this->assertEquals (
+            500,
+            $this->object->httpStatus,
+            "Status should be set internally"
+        ); 
+        $this->assertEquals (
+            "Nothing good happened.",
+            $this->object->hyperDescription,
+            "Message that was included with status should be in the hypermedia description"
+        ); 
+    }
+
+    /**
+     * @covers HummingJay\Server::makeStatusHeader
+     */
+    public function testMakeStatusHeader()
+    {
+        $this->assertEquals (
+            'HTTP/1.0 404 Not Found',
+            $this->object->makeStatusHeader(404),
+            "Basic correct header string"
+        ); 
+        $this->assertEquals (
+            'HTTP/1.0 666',
+            $this->object->makeStatusHeader(666),
+            "Non-standard status should still work, but with no description"
+        ); 
+    }
 
 
    
     /**
-     * @covers HummingJay\Server::getData
+     * @covers HummingJay\Server::addHeader
      */
-    public function testGetData()
+    public function testAddHeader()
     {
-      
+        $this->object->addHeader('X-Test-Header: Meow');
+        $this->assertContains(
+            'X-Test-Header: Meow',
+            $this->object->responseHeaders,
+            'Basic test that response header added'
+        );
+    }
+
+
+    /**
+     * @covers HummingJay\Server::addData
+     */
+    public function testAddData()
+    {
+        $this->object->responseData = [];
+        $this->object->addData(['foo'=>'bar']);
+        $this->assertArraySubset(
+            ['foo'=>'bar'],
+            $this->object->responseData,
+            'Data inserted into responseData'
+        );
+
+        $this->object->addData(['bonk'=>'blap']);
+        $this->assertArraySubset(
+            ['bonk'=>'blap'],
+            $this->object->responseData,
+            'Second bit of data inserted into responseData'
+        );
+    }
+
+
+    /**
+     * @covers HummingJay\Server::makeResponseBody
+     */
+    public function testMakeResponseBody()
+    {
+        $this->object->addData(['foo'=>'bar']);
+        $this->object->hyperTitle('BizzBazz');
+        $this->assertArraySubset(
+            ['foo'=>'bar'],
+            $this->object->makeResponseBody(),
+            'Data correctly returned in body'
+        );
+        $this->assertArraySubset(
+            ['hypermedia'=>['title'=>'BizzBazz']],
+            $this->object->makeResponseBody(),
+            'Hypermedia title correctly returned in body'
+        );
+    }
+
+
+    /**
+     * @covers HummingJay\Server::send
+     */
+    public function testSend()
+    {
+        $this->object->httpStatus = 200; // not using setStatus() method for this for simplicity
+        $this->object->addHeader('X-Test-Header2: Oink!');
+        $this->object->addData(['animal'=>'bear']);
+        $results = $this->object->send();
+        $this->assertContains(
+            '"bear"',
+            $results['body'],
+            "Body of send results should contain the json-encoded data we sent"
+        );
+        $this->assertContains(
+            'HTTP/1.0 200 OK',
+            $results['headers'],
+            "Standard 200 OK status should be part of headers being sent"
+        );
+        $this->assertContains(
+            'Content-Type: application/json',
+            $results['headers'],
+            "Content type header as standard reply - json"
+        );
+        $this->assertContains(
+            'X-Test-Header2: Oink!',
+            $results['headers'],
+            "Custom header should be part of headers sent"
+        );
     }
 
 
     /**
      * @covers HummingJay\Server::hyperTitle
-     * @todo   Implement testHyperTitle().
      */
     public function testHyperTitle()
     {
-        
+        $this->object->hyperTitle('Title X');
+        $this->assertArraySubset(
+            ['hypermedia'=>['title'=>'Title X']],
+            $this->object->makeResponseBody(),
+            'Hypermedia title correctly returned in body'
+        );
     }
 
     /**
      * @covers HummingJay\Server::hyperDescription
-     * @todo   Implement testHyperDescription().
      */
     public function testHyperDescription()
     {
-       
+        $this->object->hyperDescription('This is Stuff!');
+        $this->assertArraySubset(
+            ['hypermedia'=>['description'=>'This is Stuff!']],
+            $this->object->makeResponseBody(),
+            'Hypermedia title correctly returned in body'
+        );
     }
 
     /**
      * @covers HummingJay\Server::hyperLink
-     * @todo   Implement testHyperLink().
      */
     public function testHyperLink()
     {
-    
+        $this->object->hyperLink([
+            "method"=>"GET",
+            "title"=>"Woggle",
+            "href"=>'/woggles/woggle',
+            "rel"=>"item"
+        ]);
+        $this->assertContains(
+            [
+                "method"=>"GET",
+                "title"=>"Woggle",
+                "href"=>'/woggles/woggle',
+                "rel"=>"item"
+            ],
+            $this->object->makeResponseBody()['hypermedia']['links'],
+            'Hypermedia link correct and in links collection'
+        );
+
+        $this->object->uri = '/chickens';
+        $this->object->hyperLink(["title"=>"Chickens"]); // only setting title
+        $this->assertContains(
+            [
+                "method"=>"OPTIONS",
+                "title"=>"Chickens",
+                "href"=>'/chickens',
+                "rel"=>"none"
+            ],
+            $this->object->makeResponseBody()['hypermedia']['links'],
+            'Hypermedia link defaults all perfect, including current uri'
+        );
     }
 
 
@@ -161,22 +304,46 @@ class ServerTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetHypermedia()
     {
-      
+        $this->object->hyperTitle('');
+        $this->object->hyperDescription('');
+        $this->object->hyperLinks = [];
+        $hm = $this->object->getHypermedia();
+        $this->assertArrayNotHasKey(
+            'title',
+            $hm,
+            "Should not have a title property if was blank"
+        );
+        $this->assertArrayNotHasKey(
+            'description',
+            $hm,
+            "Should not have a description property if was blank"
+        );
+        $this->assertArrayNotHasKey(
+            'links',
+            $hm,
+            "Should not have a links property if was blank"
+        );
+
+        $this->object->hyperTitle('Hello');
+        $this->object->hyperDescription('How are you?');
+        $this->object->hyperLink([]); // 1    
+        $this->object->hyperLink([]); // 2
+        $hm = $this->object->getHypermedia();
+        $this->assertArrayHasKey(
+            'title',
+            $hm,
+            "Should have a title property if was not blank"
+        );
+        $this->assertArrayHasKey(
+            'description',
+            $hm,
+            "Should have a description property if was not blank"
+        );
+        $this->assertEquals(
+            2,
+            count($hm['links']),
+            "There should be two links in the hypermedia"
+        );
     }
-
-
-
-
-    /**
-     * @covers HummingJay\Server::addData
-     * @todo   Implement testAddData().
-     */
-    public function testAddData()
-    {
-     
-    }
-
-
-
 
 }

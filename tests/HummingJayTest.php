@@ -2,7 +2,16 @@
 namespace HummingJay;
 
 class Foo extends Resource{
-    // For testMakeResource 
+    // Mini-resource used to test routing, instantiating resources, etc.
+    public $title = 'Foo!';
+    public $description = "I am Foo!";
+
+    public function post($server){
+        if($server->requestData){
+            $server->addData(["reply"=>"The {$server->requestData->animal} goes quack."]);
+        }
+        return $server;
+    }
 } 
 
 
@@ -16,6 +25,7 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
      * @var HummingJay
      */
     protected $object;
+    protected $server;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -23,9 +33,8 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $server = new Server();
-        $server->uri = '/foo';
-        $this->object = new HummingJay(null, $server);
+        $this->server = new Server();
+        $this->object = new HummingJay(null, $this->server);
     }
 
     /**
@@ -40,19 +49,52 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers HummingJay\HummingJay::parseRouteString
-     * @todo   Implement testParseRouteString().
      */
     public function testRoute()                                            
     {
         $routes = $this->object->parseRouteString("/foo - \\HummingJay\\Foo");
-        //$this->object->route($routes);
 
-        
+        $this->server->uri = '/foo';
+        $this->server->method = "OPTIONS";
+        $this->object->route($routes);
+        $this->assertEquals(
+            200,
+            $this->server->httpStatus,
+            'If routing was successful, we should have a 200 OK status'
+        );
+        $this->assertEquals(
+            'Foo!',
+            $this->server->makeResponseBody()['hypermedia']['title'],
+            'If routing was successful (OPTIONS /foo) , the hypermedia title will be set'
+        );
+
+
+        $this->server->uri = '/notexists';
+        $this->object->route($routes);
+        $this->assertEquals(
+            404,
+            $this->server->httpStatus,
+            'A non-matching URI should return a 404'
+        );
+        $this->assertContains(
+            'not found',
+            $this->server->makeResponseBody()['hypermedia']['description'],
+            'The hypermedia description should contain an error message for a 404.'
+        );
+
+
+        $routes = $this->object->parseRouteString("/bad - BadClass");
+        $this->server->uri = '/bad';
+        $this->object->route($routes);
+        $this->assertEquals(
+            500,
+            $this->server->httpStatus,
+            'An http 500 status should be returned when the URI is good, but the resource is not'
+        );
     }
 
     /**
      * @covers HummingJay\HummingJay::parseRouteString
-     * @todo   Implement testParseRouteString().
      */
     public function testParseRouteString()                                            
     {
@@ -79,20 +121,21 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
             $this->object->parseRouteString("/books - D"),
             "Test single line route string."
         );
+        $this->assertEquals(
+            'none',
+            $this->object->routeStringError,
+            'error property is \'none\' if all went well'
+        );
 
+        $this->object->parseRouteString("/uri/but/no/class");
+        $this->assertNotEquals(
+            'none',
+            $this->object->routeStringError,
+            'error should be set to something other than  \'none\' if there was a problem with the route string'
+        );
     }
 
     
-    /**
-    * @expectedException UnexpectedValueException
-    */
-    public function testParseRouteStringException()
-    {
-        //Bad route string because no class for route /books.
-        $this->object->parseRouteString("/books");
-        
-    }
-        
 
     /**
      * @covers HummingJay\HummingJay::matchUri
@@ -134,14 +177,11 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
      */
     public function testMakeResource()
     {
-        //$req = new Request('');   <------- need to pass $server to makeResource() ????
-
         $this->assertEquals(
             null, 
             $this->object->makeResource("NoGoats"), 
             "Class that doesn't exist returns null"
         );
-// todo add a test to test your test in a postive class existing on this plane of existance.
 
         $this->assertInstanceOf(
             "HummingJay\Foo", 
@@ -149,7 +189,56 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
             "Check if a Foo object is returned."
         );
 
+    }
 
+
+    public function testSystem()
+    {
+        // As much as possible (without an actual web server)
+        // test the outcomes of real-world usage of
+        // HummingJay from instantiation to (simulated) output:
+
+        // 1. Test Data Round-Trip
+        $server1 = new Server();
+        $server1->uri = '/test1';
+        $server1->method = 'POST';
+        $server1->rawRequestData = '{"animal":"duck"}';
+        $server1->decodeJson(); // have to manually call because we're in test environment
+        $test1 = new HummingJay('/test1 - \\HummingJay\\Foo', $server1);
+        $headers1 = $test1->sentResponse["headers"];
+        $response_data1 = json_decode($test1->sentResponse["body"]);
+        $this->assertContains('HTTP/1.0 200 OK', $headers1, "Status should indicate request was good");
+        $this->assertEquals("The duck goes quack.", $response_data1->reply, "The response body should have JSON-encoded data proving the input was accepted and used.");
+
+        // 2. Test 404 Error - generated by HummingJay::route()
+        $server2 = new Server();
+        $server2->uri = '/baduri';
+        $test2 = new HummingJay('/test2 - \\HummingJay\\Foo', $server2);
+        $headers2 = $test2->sentResponse["headers"];
+        $response_data2 = json_decode($test2->sentResponse["body"]);
+        $this->assertContains('HTTP/1.0 404 Not Found', $headers2, "Status should be 404 because this is a bad URI");
+        $this->assertContains("not found", $response_data2->hypermedia->description, "Response body should contain hypermedia explaining the issue");
+
+        // 3. Test 500 Error - generated by HummingJay::route()
+        $server3 = new Server();
+        $server3->uri = '/test3';
+        $test3 = new HummingJay('/test3 - BadClassname', $server3);
+        $headers3 = $test3->sentResponse["headers"];
+        $response_data3 = json_decode($test3->sentResponse["body"]);
+        $this->assertContains('HTTP/1.0 500 Internal Server Error', $headers3, "Status should be 500 because the URI is good, but the resource classname isn't");
+        $this->assertContains("internal error", $response_data3->hypermedia->description, "Response body should contain hypermedia explaining the issue");
+
+        // 4. Test 400 Error - generated by Server::decodeJson()
+        $server4 = new Server();
+        $server4->uri = '/test4';
+        $server4->method = 'POST';
+        $server4->rawRequestData = '{invalid json}';
+        $server4->decodeJson(); // have to manually call because we're in test environment
+        $test4 = new HummingJay('/test4 - \\HummingJay\\Foo', $server4);
+        $headers4 = $test4->sentResponse["headers"];
+        $response_data4 = json_decode($test4->sentResponse["body"]);
+        $this->assertContains('HTTP/1.0 400 Bad Request', $headers4, "Status should be 400 because json data was mangled");
+        $this->assertContains("syntax_error", $response_data4->json_error, "Response body should contain a json_error explaining the problem");
     }
 
 }

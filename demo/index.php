@@ -123,7 +123,9 @@ class BooksCollection extends Resource{
 	}
 
 	public function post($server){
-		$server->addData(["new_id"=>100]); // pretend it worked
+		if($server->requestData){
+			$server->addData(["new_id"=>100]); // pretend it worked
+		}
 		return $server;
 	}
 }

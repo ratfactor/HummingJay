@@ -3,6 +3,8 @@ namespace HummingJay;
 
 
 class HummingJay{
+	public $routeStringError = 'none';
+	public $sentResponse = null; // to examine for testing
 	private $server = null;
 
 	public function __construct($route_str=null, $server = null){
@@ -19,7 +21,8 @@ class HummingJay{
 		$line = strtok($route_str, "\r\n");
 		while ($line !== false) {
 			if(!preg_match("/(\S+)\s-\s(\S+)/", $line, $matches)){
-				throw new \UnexpectedValueException("Bad line in the routing string: '$line'");
+				$this->routeStringError = "Error: '$line' did not fit the format '/uri/path - ClassName'";
+				return [];
 			}
 			$routes[$matches[1]] = $matches[2]; // uri = classname
 			$line = strtok("\r\n");
@@ -29,22 +32,27 @@ class HummingJay{
 
 
 	public function route($routes){
-		$this->server->all_routes = $routes;
+		$this->server->all_api_routes = $routes;
 		
 		$matchedResource = $this->matchUri($routes, $this->server->uri);
 		if ($matchedResource === null){
-			$this->server->send404("There is no resource at '{$this->server->uri}'.");
+			$this->server->hyperTitle = 'Error 404 Not Found';
+			$this->server->setStatus(404, "Resource not found at '{$this->server->uri}'.");
+			$this->sentResponse = $this->server->send();
 			return;
 		}
 		$this->server->params = $matchedResource["params"];
 
 		$resourceObj = $this->makeResource($matchedResource["classname"], $this->server);
 		if ($resourceObj === null){
-			$this->server->send500("Could not resolve resource at '{$this->server->uri}'.");
+			$this->server->setStatus(500, "Resource at '{$this->server->uri}' has an internal error.");
+			$this->sentResponse = $this->server->send();
 			return;
 		}
 		$this->server = $resourceObj->callMethod($this->server);
-		if($this->server){ $this->server->send(); }
+		if($this->server){ 
+			$this->sentResponse = $this->server->send(); 
+		}
 	}
 
 	public function matchUri($routes, $uri){
