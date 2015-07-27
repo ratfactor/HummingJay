@@ -14,13 +14,13 @@ class Resource{
 		if($this->halted){ return $server; }
 		$method = strtolower($server->method);
 		if(!method_exists($this, $method)){
-			$server->send405("The ".strtoupper($method)." method is not supported by this serverource. Try an OPTIONS serveruest for a list of supported methods.");
+			$server->hyperStatus(405, "The ".strtoupper($method)." method is not supported by this resource. Try an OPTIONS request for a list of supported methods.");
 			return $server;
 		}
 		return $this->$method($server);
 	}
 
-	protected function halt(){
+	public function halt(){
 		$this->halted = true;
 	}
 

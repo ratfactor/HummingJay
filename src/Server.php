@@ -85,8 +85,8 @@ class Server{
 		if(strlen($this->rawRequestData) == 0){ $this->jsonError = 'empty'; }
 		if($this->jsonError !== 'none'){
 			if($this->method == 'PUT' || $this->method == 'POST' || $this->method == 'PATCH'){
-				$this->setStatus(400, "There was an error parsing the expected JSON Data: {$this->jsonError}");
-				$this->addData(["json_error"=>$this->jsonError]);
+				$this->hyperStatus(400, "There was an error parsing the expected JSON Data: {$this->jsonError}");
+				$this->addResponseData(["json_error"=>$this->jsonError]);
 			}
 		}
 	}
@@ -103,17 +103,23 @@ class Server{
 	// Response Methods
 
 
-	public function setStatus($code, $description){
+	public function setStatus($code, $description = null){
+		// $description parameter has been deprecated, it is confusing
+		// call hyperDescription() separately or use hyperStatus() instead
 		$this->httpStatus = $code;
 		$this->hyperDescription($description);
 	}
 
 	public function makeStatusHeader($code){
-		$status = "HTTP/1.0 $code";
-		if(array_key_exists($code, $this->httpStatuses)){
-			$status = "$status {$this->httpStatuses[$code]}";
-		}
+		$status = "HTTP/1.0 ".$this->makeStatusLine($code);
 		return $status;
+	}
+
+	public function makeStatusLine($code){
+		if(array_key_exists($code, $this->httpStatuses)){
+			return "$code {$this->httpStatuses[$code]}";
+		}
+		return $code;
 	}
 
 	public function addHeader($str){
@@ -133,8 +139,13 @@ class Server{
 	}
 
 
-	public function addData($data){
+	public function addResponseData($data){
 		$this->responseData = array_merge($this->responseData, $data);
+	}
+
+	public function addData($data){
+		// this method is deprecated - confusing name
+		$this->addResponseData($data);
 	}
 
 
@@ -168,6 +179,11 @@ class Server{
 		$this->useHypermedia = true;
 	}
 
+	public function hyperStatus($code, $description){
+		$this->httpStatus = $code;
+		$this->hyperTitle($this->makeStatusLine($code));
+		$this->hyperDescription($description);
+	}
 
 	public function getHypermedia(){
 		$hypermedia = array();

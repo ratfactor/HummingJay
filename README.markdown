@@ -57,7 +57,7 @@ Add as many HTTP method handlers as you need (supported: OPTIONS, GET, PUT, POST
 
 	class Foo extends HummingJay\Resource{
 		public function get($server){
-			$server->addData(["foo_id"=>"1003"]);
+			$server->addResponseData(["foo_id"=>"1003"]);
 			return $server;
 		}
 	}
@@ -110,25 +110,26 @@ When `$server` is returned from a method handler, it contains the instructions f
 
 Method        | Description
 --------------|---------------------------------
-`setStatus($num, $str)`    | set the HTTP status and add a hypermedia description
+`setStatus($num)`          | set the HTTP status code
 `addHeader($str)`          | add custom HTTP header
-`addData($data)`           | add any PHP data (will be JSON-encoded)
+`addResponseData($data)`   | add any PHP data (will be JSON-encoded)
 `hyperTitle($str)`         | set the hypermedia title
 `hyperDescription($str)`   | set the hypermedia description
 `hyperLink($data)`         | add a hypermedia link
+`hyperStatus($num, $str)`  | set HTTP status code with hypermedia
 
-#### $server->setStatus($num, $str)
+#### $server->setStatus($num)
 
 	class Foo extends \HummingJay\Resource{
 		public function get($server){
-			$server->setStatus(500, "Exploding!");
+			$server->setStatus(500);
 			return $server;
 		}
 	}
 
 See `src/Server.php` for a complete list of the HTTP status codes that HummingJay understands. You are free to use a code not in the list, but it will not have a text description (which is HTTP legal).
 
-The description of the status will appear in the hypermedia portion of the JSON response body so that it can be dealt with by client applications or human users.  You are free to use addData() to provide more fine-grained responses to go along with the HTTP status code.
+See hyperStatus() for a more friendly way to inform humans and computers of the response status.
 
 #### $server->addHeader($str)
 
@@ -142,11 +143,11 @@ The description of the status will appear in the hypermedia portion of the JSON 
 This can be anything you like.  Note that HummingJay already automatically sets the Content-Type for JSON for you.
 
 
-#### $server->addData($data)
+#### $server->addResponseData($data)
 
 	class Foo extends \HummingJay\Resource{
 		public function get($server){
-			$server->addData(['foo'=>'bar']);
+			$server->addResponseData(['foo'=>'bar']);
 			return $server;
 		}
 	}
@@ -157,10 +158,10 @@ In the above example, the associative array added to the response will be conver
 
 HummingJay relies on PHP's build-in json_encode() function.  It has reasonable rules for handling sequential arrays, associative arrays, objects, etc.
 
-Successive calls to `addData()` merges the data using PHP's built-in `array_merge()` function.
+Successive calls to `addResponseData()` merges the data using PHP's built-in `array_merge()` function.
 
-	$server->addData(["dog"=>"Sparky"]);
-	$server->addData(["cat"=>"Fuzzy"]);
+	$server->addResponseData(["dog"=>"Sparky"]);
+	$server->addResponseData(["cat"=>"Fuzzy"]);
 	return $server;
 
 Results in response body:
@@ -186,6 +187,7 @@ As soon as you add any of the hypermedia properties such as title, description, 
 			"description": "I contain all of the FOO!"
 		}
 	}
+
 
 #### $server->hyperLink($data)
 
@@ -219,6 +221,28 @@ This example will add the link to the links array in the hypermedia property of 
 It is important to understand that the default OPTIONS method provided by HummingJay generates linked hm-json hypermedia for your API.  Other methods do **not** return hypermedia unless you call one of the `hyper*` methods.
 
 
+#### $server->hyperStatus($num, $str)
+
+	class Foo extends \HummingJay\Resource{
+		public function get($server){
+			$server->hyperStatus(410, "This resource was removed forever.");
+			return $server;
+		}
+	}
+
+This example will return a response with an HTTP 410 status and the following message body:
+
+
+	{
+		"hypermedia": {
+			"title": "410 Gone",
+			"description": "This resource was removed forever."
+		}
+	}
+
+You are free to use addResponseData() to provide more fine-grained responses to go along with the HTTP status code.
+
+
 ## Halting a resource with halt()
 
 You can use a resource's constructor to act as a "guard" for the resource as a whole. This makes it possible to check for the validity of a request for all methods in one place.  To make a resource send its response immediately without any of the HTTP method handlers being invoked, simply call its halt() method.  Here's an example:
@@ -227,7 +251,7 @@ You can use a resource's constructor to act as a "guard" for the resource as a w
 		public function __construct($server){
 			$id = $server->params["foo_id"];
 			if(!$db->isValidFoo($id)){
-				$server->setStatus(404, "Could not find a foo with ID $id.");
+				$server->hyperStatus(404, "Could not find a foo with ID $id.");
 				$this->halt();
 			}
 		}

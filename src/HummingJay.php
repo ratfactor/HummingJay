@@ -36,8 +36,7 @@ class HummingJay{
 		
 		$matchedResource = $this->matchUri($routes, $this->server->uri);
 		if ($matchedResource === null){
-			$this->server->hyperTitle = 'Error 404 Not Found';
-			$this->server->setStatus(404, "Resource not found at '{$this->server->uri}'.");
+			$this->server->hyperStatus(404, "Resource not found at '{$this->server->uri}'.");
 			$this->sentResponse = $this->server->send();
 			return;
 		}
@@ -45,7 +44,7 @@ class HummingJay{
 
 		$resourceObj = $this->makeResource($matchedResource["classname"], $this->server);
 		if ($resourceObj === null){
-			$this->server->setStatus(500, "Resource at '{$this->server->uri}' has an internal error.");
+			$this->server->hyperStatus(500, "Resource at '{$this->server->uri}' has an internal error.");
 			$this->sentResponse = $this->server->send();
 			return;
 		}

@@ -29,14 +29,15 @@ error_reporting(E_ALL);
 
 
 /*
-	Use the Composer-supplied autoloader to gain access to HummingJay's classes.
-	NOTE: You'll need to have composer generate the autoloader first:
-		composer install
-	This will be done automatically by the Vagrant provisioning script, if you're
-	using it.
+	Manually include the class files.
+
+	You can use Composer to install HummingJay and let its autoloader do 
+	this for you.
 */ 
 
-require_once "../vendor/autoload.php";
+require_once "../src/HummingJay.php";
+require_once "../src/Resource.php";
+require_once "../src/Server.php";
 
 
 /*
@@ -130,7 +131,7 @@ class BooksCollection extends Resource{
 
 	public function post($server){
 		if($server->requestData){ // make sure the user sent something valid
-			$server->addData(["new_id"=>100]); // pretend it worked
+			$server->addResponseData(["new_id"=>100]); // pretend it worked
 		}
 		return $server;
 	}
@@ -183,7 +184,7 @@ class Book extends Resource{
 		$id = $server->params["book_id"];
 		$this->data = FakeBookDb::getBook($id);
 		if(is_null($this->data)){
-			$server->setStatus(404, "Could not find a book with ID $id.");
+			$server->hyperStatus(404, "Could not find a book with ID $id.");
 			$this->halt();
 		}
 	}
@@ -195,7 +196,7 @@ class Book extends Resource{
 	}
 
 	public function get($server){
-		$server->addData($this->data);
+		$server->addResponseData($this->data);
 		return $server;
 	}
 }
@@ -247,7 +248,7 @@ class Review extends Resource{
 	}
 
 	public function get($server){
-		$server->addData([
+		$server->addResponseData([
 			"book_id"=>$this->book->data['id'],
 			"book_title"=>$this->book->data['title'],
 			"review_author"=>"John Doe",
@@ -270,7 +271,7 @@ class AuthorsCollection extends Resource{
 	public $description = "You can GET a list of the authors of all of the books available through this API.";
 
 	public function get($server){
-		$server->addData(["authors_list"=>FakeBookDb::getAuthors()]);
+		$server->addResponseData(["authors_list"=>FakeBookDb::getAuthors()]);
 		return $server;
 	}
 }
