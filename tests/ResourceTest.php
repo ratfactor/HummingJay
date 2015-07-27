@@ -51,8 +51,30 @@ class ResourceTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             "Sitting Still Like a Frog",
             $server->title,
-            "Returned title that verifies that the get handler of our test resource was called."
+            "Returned title verifies that the get handler of our test resource was called."
         );
+
+    }
+
+    /**
+     * @covers HummingJay\Resource::callMethod
+     * @todo   Implement testHalt().
+     */
+    public function testHalt()
+    {
+        $server = new Server("");
+        $server->method = "GET";
+        $server->title = "As I Lay Dying";
+        $tr = new TestResource($server);
+        $tr->halt();
+        $server = $tr->callMethod($server);
+
+        $this->assertEquals(
+            "As I Lay Dying",
+            $server->title,
+            "Returned title verifies that the get handler of our test resource was NOT called."
+        );
+
     }
 }
 

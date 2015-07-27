@@ -20,7 +20,7 @@ class Resource{
 		return $this->$method($server);
 	}
 
-	protected function halt(){
+	public function halt(){
 		$this->halted = true;
 	}
 
