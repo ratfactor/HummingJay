@@ -116,16 +116,36 @@ class ServerTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetStatus()
     {
+        
+        //Deprecated behavior
+        
         $this->object->setStatus(500, "Nothing good happened.");
         $this->assertEquals (
             500,
             $this->object->httpStatus,
             "Status should be set internally"
         ); 
+
         $this->assertEquals (
             "Nothing good happened.",
             $this->object->hyperDescription,
             "Message that was included with status should be in the hypermedia description"
+        ); 
+
+        //New behavior
+
+        $this->object->hyperDescription = "I'm my own message.";
+        $this->object->setStatus(418);
+        $this->assertEquals (
+            418,
+            $this->object->httpStatus,
+            "Status should be set internally"
+        ); 
+
+        $this->assertEquals (
+            "I'm my own message.",
+            $this->object->hyperDescription,
+            "hyperDescription should not change, no description sent with setStatus()"
         ); 
     }
 
@@ -146,6 +166,23 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         ); 
     }
 
+    /**
+     * @covers HummingJay\Server::makeStatusLine
+     */
+    public function testMakeStatusLine()
+    { 
+        $this->assertEquals (
+            '500 Internal Server Error',
+            $this->object->makeStatusLine(500),
+            "The code 500 was found in the httpStatus array."
+        ); 
+
+         $this->assertEquals (
+            '001',
+            $this->object->makeStatusLine(001),
+            "The code 001 should not be found in the httpStatus array."
+        ); 
+    }
 
    
     /**
@@ -167,6 +204,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddData()
     {
+        // addData() is deprecated
+        //This test needs to remain but addData should not be used any where else.
         $this->object->responseData = [];
         $this->object->addData(['foo'=>'bar']);
         $this->assertArraySubset(
@@ -183,13 +222,34 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @covers HummingJay\Server::addResponseData
+     */
+    public function testAddResponseData()
+    {
+        $this->object->responseData = [];
+        $this->object->addResponseData(['foo'=>'bar']);
+        $this->assertArraySubset(
+            ['foo'=>'bar'],
+            $this->object->responseData,
+            'Data inserted into responseData'
+        );
+
+        $this->object->addResponseData(['bonk'=>'blap']);
+        $this->assertArraySubset(
+            ['bonk'=>'blap'],
+            $this->object->responseData,
+            'Second bit of data inserted into responseData'
+        );
+    }
+
 
     /**
      * @covers HummingJay\Server::makeResponseBody
      */
     public function testMakeResponseBody()
     {
-        $this->object->addData(['foo'=>'bar']);
+        $this->object->addResponseData(['foo'=>'bar']);
         $this->object->hyperTitle('BizzBazz');
         $this->assertArraySubset(
             ['foo'=>'bar'],
@@ -211,7 +271,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     {
         $this->object->httpStatus = 200; // not using setStatus() method for this for simplicity
         $this->object->addHeader('X-Test-Header2: Oink!');
-        $this->object->addData(['animal'=>'bear']);
+        $this->object->addResponseData(['animal'=>'bear']);
         $results = $this->object->send();
         $this->assertContains(
             '"bear"',
@@ -297,6 +357,41 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             'Hypermedia link defaults all perfect, including current uri'
         );
     }
+
+
+
+
+  /**
+     * @covers HummingJay\Server::hyperStatus
+     */
+    public function testHyperStatus()
+    {
+        $this->object->hyperStatus(500, "I'm so hyper!");
+
+        $this->assertEquals (
+            500,
+            $this->object->httpStatus,
+            "Status should be set internally"
+        ); 
+
+        $this->assertEquals (
+            '500 Internal Server Error',
+            $this->object->hyperTitle,
+            "Status should be set internally"
+        ); 
+
+        $this->assertEquals (
+            "I'm so hyper!",
+            $this->object->hyperDescription,
+            "Status should be set internally"
+        ); 
+
+    }
+
+
+
+
+
 
 
     /**

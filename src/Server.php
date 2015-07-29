@@ -103,11 +103,13 @@ class Server{
 	// Response Methods
 
 
-	public function setStatus($code, $description = null){
+	public function setStatus($code, $description = ''){
 		// $description parameter has been deprecated, it is confusing
 		// call hyperDescription() separately or use hyperStatus() instead
 		$this->httpStatus = $code;
-		$this->hyperDescription($description);
+		if($description !== ''){
+			$this->hyperDescription($description);
+		};
 	}
 
 	public function makeStatusHeader($code){

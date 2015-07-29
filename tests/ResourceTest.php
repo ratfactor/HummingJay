@@ -58,6 +58,28 @@ class ResourceTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers HummingJay\Resource::callMethod
+     * @todo   Implement testCallMethod().
+     */
+    public function testCallMethod405()
+    {
+        $server = new Server("");
+        $server->method = "POST";
+        $tr = new TestResource($server);
+        $server = $tr->callMethod($server);
+
+        $this->assertEquals(
+            405,
+            $server->httpStatus,
+            "Returned 405 error because POST method not supported."
+        );
+
+    }
+
+
+
+
+    /**
+     * @covers HummingJay\Resource::callMethod
      * @todo   Implement testHalt().
      */
     public function testHalt()
