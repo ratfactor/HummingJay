@@ -321,6 +321,7 @@ I intend to stick to the rules of [semantic versioning](http://semver.org/).
 
 Version | Date       | Description
 --------|------------|------------
+3.0.1   | 2015-07-29 | Minor bugfix, completed test coverage
 3.0.0   | 2015-07-25 | Major refactor with API-breaking changes (cleaner, more testable)
 2.0.1   | 2015-07-24 | Added Vagrant VM for testing/demo, refactored and added more tests
 2.0.0   | 2015-07-18 | Refactored, added Request class, changed interface of request payload
