@@ -92,7 +92,9 @@ class Server{
 	}
 
 	public function extractApiUri($req_uri, $api_base){
-		$base_dir = dirname($api_base);
+		$base_dir = explode("/", $api_base);
+		array_pop($base_dir);
+		$base_dir = implode("/", $base_dir);
 		$uri = preg_replace("'^($api_base|$base_dir)'", "", $req_uri); // '=regex delimiter
 		return $uri === '' ? '/' : $uri;
 	}

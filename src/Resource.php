@@ -24,7 +24,7 @@ class Resource{
 		$this->halted = true;
 	}
 
-	protected function options($server){
+	public function options($server){
 		$server->hyperTitle($this->title);
 		$server->hyperDescription($this->description);
 
@@ -36,8 +36,9 @@ class Resource{
 			}
 			
 			if($test_uri == $server->uri) continue; // self!
+			
 			// test for parent
-			if($test_uri == str_replace('\\', '/', dirname($server->uri))){
+			if($test_uri == $this->parentUri($server->uri)){
 				$server->hyperLink(["title" => $test_uri, "href" => $test_uri, "rel" => 'parent']);
 			}
 			// test for children
@@ -55,6 +56,12 @@ class Resource{
 		}
 
 		return $server;
+	}
+
+
+	public function parentUri($uri){
+		$parent = substr($uri, 0, strrpos($uri, '/'));
+		return $parent !== '' ? $parent : "/";
 	}
 
 }
