@@ -53,6 +53,10 @@ To create a new resource, extend the `HummingJay\Resource` class.  Example:
 
 As shown, it is recommended that you also customize the title and description of your resource.  These will be viewable by applications (such as hm-json Browser) which understand the hm-json formatted hypermedia.
 
+If the resource should not automatically attempt to decode JSON request data, you can add an optional setting:
+
+	$decodeJson = false;
+
 Add as many HTTP method handlers as you need (supported: OPTIONS, GET, PUT, POST, DELETE, PATCH, HEAD).  Here's a GET which will return a JSON-encoded object containing a parameter named "foo_id".
 
 	class Foo extends HummingJay\Resource{
@@ -321,6 +325,7 @@ I intend to stick to the rules of [semantic versioning](http://semver.org/).
 
 Version | Date       | Description
 --------|------------|------------
+3.1.0   | 2015-11-20 | Added $decodeJson option to Resource object
 3.0.2   | 2015-08-12 | Resource::options() tested and refactored, fixed bug in extractApiUri()
 3.0.1   | 2015-07-29 | Minor bugfix, completed test coverage
 3.0.0   | 2015-07-25 | Major refactor with API-breaking changes (cleaner, more testable)

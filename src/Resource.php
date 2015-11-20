@@ -5,8 +5,10 @@ class Resource{
 	protected $title = '';
 	protected $description = '';
 	protected $halted = false;
+	protected $decodeJson = true;
 
 	function __construct($server){
+		if($this->decodeJson) $server->decodeJson();
 		return;
 	}
 

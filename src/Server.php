@@ -61,7 +61,6 @@ class Server{
 			$this->method = $_SERVER['REQUEST_METHOD'];
 			$this->uri = $this->extractApiUri($_SERVER['REQUEST_URI'], $_SERVER['SCRIPT_NAME']);
 			$this->rawRequestData = file_get_contents("php://input");
-			$this->decodeJson();
 		}
 	}
 
