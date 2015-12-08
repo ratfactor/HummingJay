@@ -91,6 +91,7 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
             $this->server->httpStatus,
             'An http 500 status should be returned when the URI is good, but the resource is not'
         );
+
     }
 
     /**
@@ -167,6 +168,12 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('13', $matchedResource['params']['bid'], "URI match has first param");
         $this->assertEquals('45', $matchedResource['params']['rid'], "URI match has second param");
+
+
+        $routes = $this->object->parseRouteString("/files/{fid}/{filename--->} - Foo");
+        $matchedResource = $this->object->matchUri($routes, '/files/74/goat/pig.jpg'); 
+        $this->assertEquals('74', $matchedResource['params']['fid'], "URI match has first param");
+        $this->assertEquals('goat/pig.jpg', $matchedResource['params']['filename'], "The 'match-to-the-end' param is correct");
 
     }
 

@@ -56,7 +56,9 @@ class HummingJay{
 
 	public function matchUri($routes, $uri){
 		foreach ($routes as $route_uri => $route_class) {
-			$uri_regex = "'^".preg_replace("'\{([A-Za-z0-9_]+)\}'", "(?P<\\1>[^/]+)", $route_uri)."(?:\?.*)?$'";
+			$uri_regex = preg_replace("'\{([A-Za-z0-9_]+)\}'", "(?P<\\1>[^/]+)", $route_uri);
+			$uri_regex = preg_replace("'\{([A-Za-z0-9_]+)--->\}'", "(?P<\\1>.+)", $uri_regex);
+			$uri_regex = "'^".$uri_regex."(?:\?.*)?$'";
 			
 			if(preg_match_all($uri_regex, $uri, $matches)){
 				return ["classname" => $route_class, "params" => $this->makeParameterHash($matches)];

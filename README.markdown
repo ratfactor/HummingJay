@@ -42,6 +42,21 @@ Here you can see that we've defined four possible URIs.  One of them, `/foo/bars
 
 The four URIs will be handled by an instance of the resource class specified. When you try to reach the URI `/foo`, control will be passed off to the resource defined by the `Foo` class. 
 
+### Match-to-the-end params
+
+There is a special syntax, `{foo--->}`, for creating a final parameter that matches everything to the end of the URI.
+
+Example:
+
+	$api = new HummingJay\HummingJay("/foo/{string--->} - HelloFoo");
+
+This creates an API with a single route which will match URIs such as
+
+	/foo/Hello-World
+	/foo/etc/rc.d/chicken.txt
+
+In these two cases, the parameter named `string` would be `Hello-World` and `etc/rc.d/chicken.txt` respectively.
+
 ## Creating Resources
 
 To create a new resource, extend the `HummingJay\Resource` class.  Example:

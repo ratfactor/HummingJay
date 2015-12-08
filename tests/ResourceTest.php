@@ -45,6 +45,10 @@ class ResourceTest extends \PHPUnit_Framework_TestCase
     {
     }
 
+
+    // TODO: test $decodeJson option
+
+
     /**
      * @covers HummingJay\Resource::callMethod
      * @todo   Implement testCallMethod().
