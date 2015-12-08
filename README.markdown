@@ -340,6 +340,7 @@ I intend to stick to the rules of [semantic versioning](http://semver.org/).
 
 Version | Date       | Description
 --------|------------|------------
+3.2.0   | 2015-12-08 | Added Added 'match-to-the-end' final param syntax
 3.1.0   | 2015-11-20 | Added $decodeJson option to Resource object
 3.0.2   | 2015-08-12 | Resource::options() tested and refactored, fixed bug in extractApiUri()
 3.0.1   | 2015-07-29 | Minor bugfix, completed test coverage
