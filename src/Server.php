@@ -1,6 +1,8 @@
 <?php
 namespace HummingJay;
 
+// See project readme for public API!  Everything else is subject to change.
+
 class Server{
 	public $live = false;
 	public $all_api_routes = [];
@@ -111,6 +113,7 @@ class Server{
 		if($description !== ''){
 			$this->hyperDescription($description);
 		};
+		return $this;
 	}
 
 	public function makeStatusHeader($code){
@@ -144,11 +147,13 @@ class Server{
 
 	public function addResponseData($data){
 		$this->responseData = array_merge($this->responseData, $data);
+		return $this;
 	}
 
 	public function addData($data){
 		// this method is deprecated - confusing name
 		$this->addResponseData($data);
+		return $this;
 	}
 
 
@@ -163,11 +168,13 @@ class Server{
 	public function hyperTitle($title){
 		$this->hyperTitle = $title;
 		$this->useHypermedia = true;
+		return $this;
 	}
 
 	public function hyperDescription($description){
 		$this->hyperDescription = $description;
 		$this->useHypermedia = true;
+		return $this;
 	}
 
 	public function hyperLink($link){
@@ -180,12 +187,14 @@ class Server{
 		$link = array_merge($default, $link);
 		array_push($this->hyperLinks, $link);
 		$this->useHypermedia = true;
+		return $this;
 	}
 
 	public function hyperStatus($code, $description){
 		$this->httpStatus = $code;
 		$this->hyperTitle($this->makeStatusLine($code));
 		$this->hyperDescription($description);
+		return $this;
 	}
 
 	public function getHypermedia(){

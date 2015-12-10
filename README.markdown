@@ -55,7 +55,9 @@ This creates an API with a single route which will match URIs such as
 	/foo/Hello-World
 	/foo/etc/rc.d/chicken.txt
 
-In these two cases, the parameter named `string` would be `Hello-World` and `etc/rc.d/chicken.txt` respectively.
+In these two cases, the value of the parameter named `string` would be equal to the strings 'Hello-World' and 'etc/rc.d/chicken.txt' respectively.
+
+See 'Getting request data from $server' below to learn how to access URI parameters.
 
 ## Creating Resources
 
@@ -161,7 +163,6 @@ See hyperStatus() for a more friendly way to inform humans and computers of the 
 
 This can be anything you like.  Note that HummingJay already automatically sets the Content-Type for JSON for you.
 
-
 #### $server->addResponseData($data)
 
 	class Foo extends \HummingJay\Resource{
@@ -249,6 +250,9 @@ It is important to understand that the default OPTIONS method provided by Hummin
 		}
 	}
 
+
+*Continue reading the following section as well for a more compact version of this same example.*
+
 This example will return a response with an HTTP 410 status and the following message body:
 
 
@@ -262,9 +266,21 @@ This example will return a response with an HTTP 410 status and the following me
 You are free to use addResponseData() to provide more fine-grained responses to go along with the HTTP status code.
 
 
+#### $server methods return instance of $server
+
+All public API methods of the $server object return an instance of $server itself. This allows you to have more compact responses (which can make a big difference if you have a lot of guard statements). Here is an example using `hyperStatus()`:
+
+	class Foo extends \HummingJay\Resource{
+		public function get($server){
+			return $server->hyperStatus(410, "This resource was removed forever.");
+		}
+	}
+
+All of the method examples above can be thusly shortened. This feature also allows for the chaining of these methods. Feel free to experiment!
+
 ## Halting a resource with halt()
 
-You can use a resource's constructor to act as a "guard" for the resource as a whole. This makes it possible to check for the validity of a request for all methods in one place.  To make a resource send its response immediately without any of the HTTP method handlers being invoked, simply call its halt() method.  Here's an example:
+You can use a resource's constructor to act as a "guard" for the resource as a whole. This makes it possible to check for the validity of a request for all methods in one place.  To make a resource send its response immediately without any of the HTTP method handlers being invoked, simply call its `halt()` method.  Here's an example:
 
 	class Foo extends Resource{
 		public function __construct($server){

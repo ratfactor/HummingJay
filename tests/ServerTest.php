@@ -366,7 +366,13 @@ class ServerTest extends \PHPUnit_Framework_TestCase
      */
     public function testHyperStatus()
     {
-        $this->object->hyperStatus(500, "I'm so hyper!");
+        $return_val = $this->object->hyperStatus(500, "I'm so hyper!");
+
+        $this->assertInstanceOf (
+            '\HummingJay\Server',
+            $return_val,
+            "hyperStatus() should return the server object"
+        ); 
 
         $this->assertEquals (
             500,
