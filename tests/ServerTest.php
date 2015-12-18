@@ -241,6 +241,14 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             $this->object->responseData,
             'Second bit of data inserted into responseData'
         );
+
+        $return_val = $this->object->addResponseData(null);
+        $this->assertInstanceOf (
+            '\HummingJay\Server',
+            $return_val,
+            "Adding null should not crash"
+        ); 
+
     }
 
 

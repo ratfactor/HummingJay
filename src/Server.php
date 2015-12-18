@@ -146,6 +146,7 @@ class Server{
 
 
 	public function addResponseData($data){
+		if(!is_array($data)) return $this;
 		$this->responseData = array_merge($this->responseData, $data);
 		return $this;
 	}
