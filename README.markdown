@@ -4,6 +4,8 @@
 
 HummingJay is a PHP 5.5+ library for creating REST APIs using the **hm-json** (todo: hm-json needs a stand-alone spec page!) format to deliver hypermedia and JSON data to clients. It has methods for routing, hypermedia generation, JSON data i/o, and handling HTTP communication.
 
+See also https://github.com/ratfactor/hm-json-browser
+
 ## Installation
 
 	composer require ratfactor/HummingJay
@@ -312,7 +314,7 @@ Once you have installed Vagrant, you can run the following commands to perform u
 
 With the virtual machine running, you can also visit the Demo website at http://localhost:8787/browser.html  *See note below!
 
-The demo uses the catchily named [hm-json Browser](https://bitbucket.org/ratfactor/hm-json-browser/wiki/Home) to navigate a tiny demonstration Books collection API.
+The demo uses the catchily named [hm-json Browser](https://github.com/ratfactor/hm-json-browser) to navigate a tiny demonstration Books collection API.
 
 
 ### Demo Note
