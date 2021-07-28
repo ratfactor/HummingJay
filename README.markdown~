@@ -356,7 +356,6 @@ I intend to stick to the rules of [semantic versioning](http://semver.org/).
 
 Version | Date       | Description
 --------|------------|------------
-4.0.1   | 2021-07-28 | Converted from Mercurial to Git
 3.3.1   | 2015-12-18 | Adding null to reponse data is now safe
 3.3.0   | 2015-12-10 | Server object methods now return server instance
 3.2.0   | 2015-12-08 | Added Added 'match-to-the-end' final param syntax
