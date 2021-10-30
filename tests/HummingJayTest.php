@@ -48,11 +48,11 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
 
 
     /**
-     * @covers HummingJay\HummingJay::parseRouteString
+     * @covers HummingJay\HummingJay::route
      */
     public function testRoute()                                            
     {
-        $routes = $this->object->parseRouteString("/foo - \\HummingJay\\Foo");
+        $routes = ["/foo"=>"\\HummingJay\\Foo"];
 
         $this->server->uri = '/foo';
         $this->server->method = "OPTIONS";
@@ -83,7 +83,7 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
         );
 
 
-        $routes = $this->object->parseRouteString("/bad - BadClass");
+        $routes = ["/bad"=>"BadClass"];
         $this->server->uri = '/bad';
         $this->object->route($routes);
         $this->assertEquals(
@@ -94,56 +94,16 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
 
     }
 
-    /**
-     * @covers HummingJay\HummingJay::parseRouteString
-     */
-    public function testParseRouteString()                                            
-    {
-        $this->assertArrayHasKey(
-            "/books",
-            $this->object->parseRouteString("/books - Demo\\BooksCollection") , 
-            "Test a single line route string"
-        );
-
-        $this->assertArrayHasKey(
-            "/cars",
-            $this->object->parseRouteString("/books - D \n/cars - C") , 
-            "Test two line route string with UNIX line ending"
-        );
-
-        $this->assertArrayHasKey(
-            "/cars",
-            $this->object->parseRouteString("/books - D \r\n/cars - C"),
-            "Test two line route string with Windows line ending"
-        );
-
-        $this->assertArrayHasKey(
-            "/books",
-            $this->object->parseRouteString("/books - D"),
-            "Test single line route string."
-        );
-        $this->assertEquals(
-            'none',
-            $this->object->routeStringError,
-            'error property is \'none\' if all went well'
-        );
-
-        $this->object->parseRouteString("/uri/but/no/class");
-        $this->assertNotEquals(
-            'none',
-            $this->object->routeStringError,
-            'error should be set to something other than  \'none\' if there was a problem with the route string'
-        );
-    }
-
-    
 
     /**
      * @covers HummingJay\HummingJay::matchUri
      */
     public function testMatchUri()
     {
-        $routes = $this->object->parseRouteString("/books - D \r\n/cars - C");
+		$routes = [
+			"/books"=>"D", 
+			"/cars"=>"C"
+		];
 
         $this->assertEquals(
             null, 
@@ -163,14 +123,14 @@ class HummingJayTest extends \PHPUnit_Framework_TestCase
             "Test if a URI match returns classname on a second item"
         );
 
-        $routes = $this->object->parseRouteString("/books/{bid}/reviews/{rid} - Review");
+		$routes = ["/books/{bid}/reviews/{rid}"=>"Review"];
         $matchedResource = $this->object->matchUri($routes, '/books/13/reviews/45'); 
 
         $this->assertEquals('13', $matchedResource['params']['bid'], "URI match has first param");
         $this->assertEquals('45', $matchedResource['params']['rid'], "URI match has second param");
 
 
-        $routes = $this->object->parseRouteString("/files/{fid}/{filename--->} - Foo");
+		$routes = ["/files/{fid}/{filename--->}"=>"Foo"];
         $matchedResource = $this->object->matchUri($routes, '/files/74/goat/pig.jpg'); 
         $this->assertEquals('74', $matchedResource['params']['fid'], "URI match has first param");
         $this->assertEquals('goat/pig.jpg', $matchedResource['params']['filename'], "The 'match-to-the-end' param is correct");

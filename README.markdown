@@ -17,7 +17,7 @@ See also https://github.com/ratfactor/hm-json-browser
 
 	class Foo extends HummingJay\Resource{}
 
-	$api = new HummingJay\HummingJay("/foo - Foo");
+	$api = new HummingJay\HummingJay(["/foo"=>"Foo"]);
 	?>
 
 This example is unrealistically tiny.  But it is perfectly valid and shows how HummingJay routes requests: URI paths `"/foo"` to resolve to resources `Foo`.
@@ -28,17 +28,16 @@ Look in the source at the heavily commented `demo/index.php` file for a much mor
 
 ## Routing
 
-The constructor of the `HummingJay\HummingJay` class takes a string containing a list of routes.  The format is very simple: the routes are separated by newlines ("\n") and the URI of each route is separated from its associated Resource name by a hypen (`-`).
+The constructor of the `HummingJay\HummingJay` class takes an array of routes.  The format is very simple: the keys of the array are the URI of the route and the values are the Resource class name for the given route.
 
 Here's an example using PHP's nowdoc string format:
 
-	$api = new HummingJay\HummingJay(<<<'API'
-	/ - MyRoot
-	/foo - Foo
-	/foo/bars - BarCollection
-	/foo/bars/{bar_id} - SpecificBar
-	API
-	);
+	$api = new HummingJay\HummingJay([
+		"/" => "MyRoot"
+		"/foo" => "Foo"
+		"/foo/bars" => "BarCollection"
+		"/foo/bars/{bar_id}" => "SpecificBar"
+	]);
 
 Here you can see that we've defined four possible URIs.  One of them, `/foo/bars/{bar_id}`, has a parameter, which will match URIs which fit the pattern (e.g. `/foo/bars/31` or `/foo/bars/Cheers`). 
 
@@ -50,7 +49,7 @@ There is a special syntax, `{foo--->}`, for creating a final parameter that matc
 
 Example:
 
-	$api = new HummingJay\HummingJay("/foo/{string--->} - HelloFoo");
+	$api = new HummingJay\HummingJay(["/foo/{string--->}" => "HelloFoo"]);
 
 This creates an API with a single route which will match URIs such as
 
@@ -316,7 +315,6 @@ With the virtual machine running, you can also visit the Demo website at http://
 
 The demo uses the catchily named [hm-json Browser](https://github.com/ratfactor/hm-json-browser) to navigate a tiny demonstration Books collection API.
 
-
 ### Demo Note
 
 Due to an *extremely* irritating setting hidden somewhere in the bowels of the Apache or PHP configuration, you will not be able to fully navigate the demo UNLESS you use this URL instead: http://localhost:8787/browser.html#/index.php
@@ -358,7 +356,9 @@ I intend to stick to the rules of [semantic versioning](http://semver.org/).
 
 Version | Date       | Description
 --------|------------|------------
+4.0.2   | 2021-10-30 | Recovered v4.0.0 changes (previously thought lost to bitbucket)
 4.0.1   | 2021-07-28 | Converted from Mercurial to Git
+4.0.0   | 2016-11-30 | Changed route table format from string to array
 3.3.1   | 2015-12-18 | Adding null to reponse data is now safe
 3.3.0   | 2015-12-10 | Server object methods now return server instance
 3.2.0   | 2015-12-08 | Added Added 'match-to-the-end' final param syntax
